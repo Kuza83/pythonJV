@@ -12,13 +12,13 @@ class Scene:
     def onExit(self):
         pass
 
-    def input(self):
+    def input(self, sm):
         pass
 
-    def update(self):
+    def update(self, sm):
         pass
 
-    def draw(self):
+    def draw(self, sm):
         pass
 
 
@@ -29,13 +29,17 @@ class MainMenuScene(Scene):
     def onExit(self):
         print("sort du main menu")
 
-    def input(self):
-        print("main menu input")
+    def input(self, sm):
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_RETURN]:
+            sm.push(LevelSelectScene())
+        if keys[pygame.K_q]:
+            sm.pop()
 
-    def update(self):
+    def update(self, sm):
         print("main menu update")
 
-    def draw(self):
+    def draw(self, sm):
         print("main menu draw")
 
 
@@ -46,13 +50,19 @@ class LevelSelectScene(Scene):
     def onExit(self):
         print("sort de la selection lvl")
 
-    def input(self):
-        print("lvl select input")
+    def input(self, sm):
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_1]:
+            sm.push(GameScene())
+        if keys[pygame.K_2]:
+            sm.push(GameScene())
+        if keys[pygame.K_LSHIFT]:
+            sm.pop()
 
-    def update(self):
+    def update(self, sm):
         print("lvl select update")
 
-    def draw(self):
+    def draw(self, sm):
         print("lvl select draw")
 
 
@@ -63,13 +73,15 @@ class GameScene(Scene):
     def onExit(self):
         print("sort de la game scene")
 
-    def input(self):
-        print("game scene input")
+    def input(self, sm):
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_q]:
+            sm.pop()
 
-    def update(self):
+    def update(self, sm):
         print("game scene update")
 
-    def draw(self):
+    def draw(self, sm):
         print("game scene draw")
 
 
@@ -90,15 +102,15 @@ class SceneManager:
 
     def input(self):
         if len(self.scenes) > 0:
-            self.scenes[-1].input()
+            self.scenes[-1].input(self)
 
     def update(self):
         if len(self.scenes) > 0:
-            self.scenes[-1].update()
+            self.scenes[-1].update(self)
 
     def draw(self):
         if len(self.scenes) > 0:
-            self.scenes[-1].draw()
+            self.scenes[-1].draw(self)
         # present screen
         pygame.display.flip()
 
@@ -112,10 +124,10 @@ class SceneManager:
         self.scenes.pop()
         self.enterScene()
 
-    def set(self, scenes):
+    def set(self, scene):
         # pop all scenes
         while len(self.scenes) > 0:
             self.pop()
         # add new scenes
-        for s in scenes:
+        for s in scene:
             self.push(s)

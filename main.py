@@ -56,6 +56,9 @@ sceneManager.push(mainMenu)
 
 while running:
 
+    if sceneManager.isEmpty():
+        running = False
+
     sceneManager.input()
     sceneManager.update()
     sceneManager.draw()
