@@ -1,54 +1,29 @@
-import sys
-
 import pygame
-from pygame.locals import *
 
-import item
-import platform
-import player
-import scene
 
+# -----------------
+# CONSTANT VARIABLE
+# -----------------
+
+DARK_GREY = (50, 50, 50)
+MUSTARD = (209, 206, 25)
+SCREEN_SIZE = (700, 500)
 
 # ----
-# LOAD
+# INIT
 # ----
 
 pygame.init()
+screen = pygame.display.set_mode(SCREEN_SIZE)
+pygame.display.set_caption("Mario Like")
 
-HEIGHT = 600
-WIDTH = 800
-FPS = 60
+player_image = pygame.image.load("sprites/Mario_Idle0.png")
 
-RED = (255, 0, 0)
-BLACK = (0, 0, 0)
-
-FramePerSec = pygame.time.Clock()
-
-displaySurface = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Game")
-
-PT1 = platform.Platform()
-P1 = player.Player()
-IT1 = item.Item()
-
-allSprites = pygame.sprite.Group()
-allSprites.add(P1)
-allSprites.add(PT1)
-allSprites.add(IT1)
-
-platforms = pygame.sprite.Group()
-platforms.add(PT1)
-
-items = pygame.sprite.Group()
-items.add(IT1)
+middle_platform = pygame.Rect(100, 300, 400, 50)
+left_platform = pygame.Rect(100, 250, 50, 50)
+right_platform = pygame.Rect(450, 250, 50, 50)
 
 running = True
-
-sceneManager = scene.SceneManager()
-mainMenu = scene.MainMenuScene()
-level1 = scene.GameScene()
-sceneManager.push(mainMenu)
-
 
 # ---------
 # GAME LOOP
@@ -56,64 +31,40 @@ sceneManager.push(mainMenu)
 
 while running:
 
-    if sceneManager.isEmpty():
-        running = False
-
-    sceneManager.input()
-    sceneManager.update()
-    sceneManager.draw()
-
     # -----
     # INPUT
     # -----
 
     for event in pygame.event.get():
-        if event.type == QUIT:
+        if event.type == pygame.QUIT:
             running = False
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_ESCAPE:
-                running = False
-            if event.key == pygame.K_SPACE and player.Player.updateCollidePT(P1, platforms):
-                P1.jump()
-            if event.key == pygame.K_SPACE and P1.state == "DOUBLE JUMP":
-                P1.doubleJump()
 
     # ------
     # UPDATE
     # ------
 
-    P1.move()
-    IT1.update()
-
-    player.Player.updateCollidePT(P1, platforms)
-
-    if player.Player.updateCollide(P1, items):
-        P1.state = "DOUBLE JUMP"
 
     # ----
     # DRAW
     # ----
 
-    displaySurface.fill(BLACK)
+    # background
+    screen.fill(DARK_GREY)
 
-    for entity in allSprites:
-        displaySurface.blit(entity.surf, entity.rect)
+    # platform
+    pygame.draw.rect(screen, MUSTARD, middle_platform)
+    pygame.draw.rect(screen, MUSTARD, left_platform)
+    pygame.draw.rect(screen, MUSTARD, right_platform)
 
-    font = pygame.font.SysFont("Arial", 20)
-    score = font.render(str(P1.nbJump), True, RED)
-    displaySurface.blit(score, (10, 10))
 
-    posP1x = font.render(str(int(P1.pos.x)), True, RED)
-    posP1y = font.render(str(int(P1.pos.y)), True, RED)
-    displaySurface.blit(posP1x, (10, 50))
-    displaySurface.blit(posP1y, (10, 70))
+    # player
+    screen.blit(player_image, (300, 100))
 
-    playerState = font.render(P1.state, True, RED)
-    displaySurface.blit(playerState, (10, 90))
+    # present screen
+    pygame.display.flip()
 
-    pygame.display.update()
-    FramePerSec.tick(FPS)
-
+# ----
+# QUIT
+# ----
 
 pygame.quit()
-sys.exit()
