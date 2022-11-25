@@ -27,6 +27,8 @@ clock = pygame.time.Clock()
 player_image = pygame.image.load("sprites/Mario_Idle0.png")
 player_x = 300
 player_y = 0
+player_width = 20
+player_height = 35
 
 player_speed = 0
 player_acceleration = 0.2
@@ -70,10 +72,10 @@ while running:
         new_player_x -= 2
     if keys[pygame.K_RIGHT]:
         new_player_x += 2
-    if keys[pygame.K_SPACE]:
+    if keys[pygame.K_SPACE] and player_on_ground:
         player_speed = -5
 
-    new_player_rect = pygame.Rect(new_player_x, player_y, 20, 35)
+    new_player_rect = pygame.Rect(new_player_x, player_y, player_width, player_height)
     x_collision = False
 
     for i in platforms:
@@ -87,14 +89,18 @@ while running:
     player_speed += player_acceleration
     new_player_y += player_speed
 
-    new_player_rect = pygame.Rect(player_x, new_player_y, 20, 35)
+    new_player_rect = pygame.Rect(player_x, new_player_y, player_width, player_height)
+
     y_collision = False
+    player_on_ground = False
 
     for i in platforms:
         if i.colliderect(new_player_rect):
             y_collision = True
             player_speed = 0
-            break
+            if i[1] > new_player_y:
+                player_y = i[1] - player_height
+                player_on_ground = True
 
     if not y_collision:
         player_y = new_player_y
