@@ -1,13 +1,12 @@
-import pygame
-
-
 # -----------------
 # CONSTANT VARIABLE
 # -----------------
+
 import pygame.sprite
 
 DARK_GREY = (50, 50, 50)
 MUSTARD = (209, 206, 25)
+GREEN = (0, 255, 0)
 SCREEN_SIZE = (700, 500)
 FPS = 60
 
@@ -19,11 +18,13 @@ pygame.init()
 screen = pygame.display.set_mode(SCREEN_SIZE)
 pygame.display.set_caption("Mario Like")
 clock = pygame.time.Clock()
+font = pygame.font.Font(pygame.font.get_default_font(), 24)
 
 # ----
 # LOAD
 # ----
 
+#player
 player_image = pygame.image.load("sprites/Mario_Idle0.png")
 player_x = 300
 player_y = 0
@@ -33,17 +34,33 @@ player_height = 35
 player_speed = 0
 player_acceleration = 0.2
 
+player_on_ground = True
 
+score = 0
+lives = 3
+
+#enemy
+enemy_image = pygame.image.load("images/spike_monster.png")
+enemies = [
+    pygame.Rect(100, 220, 50, 26)
+]
+
+#platform
 platforms = [
     #middle
     pygame.Rect(100, 300, 400, 50),
     #left
     pygame.Rect(100, 250, 50, 50),
     #right
-    pygame.Rect(450, 250, 50, 50),
-    pygame.Rect(0, 0, 100, 50)
+    pygame.Rect(450, 250, 50, 50)
 ]
 
+#coin
+coin_image = pygame.image.load("images/coin_0.png")
+coins = [
+    pygame.Rect(350, 270, 23, 23),
+    pygame.Rect(200, 270, 23, 23)
+]
 
 running = True
 
@@ -75,11 +92,15 @@ while running:
     if keys[pygame.K_SPACE] and player_on_ground:
         player_speed = -5
 
+    # ------
+    # UPDATE
+    # ------
+
     new_player_rect = pygame.Rect(new_player_x, player_y, player_width, player_height)
     x_collision = False
 
-    for i in platforms:
-        if i.colliderect(new_player_rect):
+    for p in platforms:
+        if p.colliderect(new_player_rect):
             x_collision = True
             break
 
@@ -94,22 +115,30 @@ while running:
     y_collision = False
     player_on_ground = False
 
-    for i in platforms:
-        if i.colliderect(new_player_rect):
+    for p in platforms:
+        if p.colliderect(new_player_rect):
             y_collision = True
             player_speed = 0
-            if i[1] > new_player_y:
-                player_y = i[1] - player_height
+            if p[1] > new_player_y:
+                player_y = p[1] - player_height
                 player_on_ground = True
 
     if not y_collision:
         player_y = new_player_y
 
+    player_rect = pygame.Rect(player_x, player_y, player_width, player_height)
 
+    for e in enemies:
+        if e.colliderect(player_rect):
+            #enemies.remove(e)
+            lives -= 1
+            player_x = 300
+            player_y = 0
 
-    # ------
-    # UPDATE
-    # ------
+    for c in coins:
+        if c.colliderect(player_rect):
+            coins.remove(c)
+            score += 1
 
     # ----
     # DRAW
@@ -119,11 +148,23 @@ while running:
     screen.fill(DARK_GREY)
 
     # platform
-    for i in platforms:
-        pygame.draw.rect(screen, MUSTARD, i)
+    for p in platforms:
+        pygame.draw.rect(screen, MUSTARD, p)
+
+    # coins
+    for c in coins:
+        screen.blit(coin_image, (c.x, c.y))
+
+    # enemies
+    for e in enemies:
+        screen.blit(enemy_image, (e.x, e.y))
 
     # player
     screen.blit(player_image, (player_x, player_y))
+
+    #ui
+    score_text = font.render("Score : " + str(score), True, MUSTARD, DARK_GREY)
+    score_text = score_text.get_rect()
 
     # present screen
     pygame.display.flip()
