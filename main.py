@@ -20,6 +20,8 @@ pygame.display.set_caption("Mario Like")
 clock = pygame.time.Clock()
 font = pygame.font.Font(pygame.font.get_default_font(), 24)
 
+game_state = "playing"
+
 # ----
 # LOAD
 # ----
@@ -37,7 +39,6 @@ player_acceleration = 0.2
 player_on_ground = True
 
 score = 0
-lives = 3
 
 #enemy
 enemy_image = pygame.image.load("images/spike_monster.png")
@@ -62,6 +63,10 @@ coins = [
     pygame.Rect(200, 270, 23, 23)
 ]
 
+#lives
+lives_image = pygame.image.load("images/heart.png")
+lives = 3
+
 running = True
 
 # ---------
@@ -82,63 +87,67 @@ while running:
     if keys[pygame.K_ESCAPE]:
         running = False
 
-    new_player_x = player_x
-    new_player_y = player_y
+    if game_state == "playing":
 
-    if keys[pygame.K_LEFT]:
-        new_player_x -= 2
-    if keys[pygame.K_RIGHT]:
-        new_player_x += 2
-    if keys[pygame.K_SPACE] and player_on_ground:
-        player_speed = -5
+        new_player_x = player_x
+        new_player_y = player_y
 
-    # ------
-    # UPDATE
-    # ------
+        if keys[pygame.K_LEFT]:
+            new_player_x -= 2
+        if keys[pygame.K_RIGHT]:
+            new_player_x += 2
+        if keys[pygame.K_SPACE] and player_on_ground:
+            player_speed = -5
 
-    new_player_rect = pygame.Rect(new_player_x, player_y, player_width, player_height)
-    x_collision = False
+        # ------
+        # UPDATE
+        # ------
 
-    for p in platforms:
-        if p.colliderect(new_player_rect):
-            x_collision = True
-            break
+    if game_state == "playing":
 
-    if not x_collision:
-        player_x = new_player_x
+        new_player_rect = pygame.Rect(new_player_x, player_y, player_width, player_height)
+        x_collision = False
 
-    player_speed += player_acceleration
-    new_player_y += player_speed
+        for p in platforms:
+            if p.colliderect(new_player_rect):
+                x_collision = True
+                break
 
-    new_player_rect = pygame.Rect(player_x, new_player_y, player_width, player_height)
+        if not x_collision:
+            player_x = new_player_x
 
-    y_collision = False
-    player_on_ground = False
+        player_speed += player_acceleration
+        new_player_y += player_speed
 
-    for p in platforms:
-        if p.colliderect(new_player_rect):
-            y_collision = True
-            player_speed = 0
-            if p[1] > new_player_y:
-                player_y = p[1] - player_height
-                player_on_ground = True
+        new_player_rect = pygame.Rect(player_x, new_player_y, player_width, player_height)
 
-    if not y_collision:
-        player_y = new_player_y
+        y_collision = False
+        player_on_ground = False
 
-    player_rect = pygame.Rect(player_x, player_y, player_width, player_height)
+        for p in platforms:
+            if p.colliderect(new_player_rect):
+                y_collision = True
+                player_speed = 0
+                if p[1] > new_player_y:
+                    player_y = p[1] - player_height
+                    player_on_ground = True
 
-    for e in enemies:
-        if e.colliderect(player_rect):
-            #enemies.remove(e)
-            lives -= 1
-            player_x = 300
-            player_y = 0
+        if not y_collision:
+            player_y = new_player_y
 
-    for c in coins:
-        if c.colliderect(player_rect):
-            coins.remove(c)
-            score += 1
+        player_rect = pygame.Rect(player_x, player_y, player_width, player_height)
+
+        for e in enemies:
+            if e.colliderect(player_rect):
+                #enemies.remove(e)
+                lives -= 1
+                player_x = 300
+                player_y = 0
+
+        for c in coins:
+            if c.colliderect(player_rect):
+                coins.remove(c)
+                score += 1
 
     # ----
     # DRAW
@@ -147,24 +156,31 @@ while running:
     # background
     screen.fill(DARK_GREY)
 
-    # platform
-    for p in platforms:
-        pygame.draw.rect(screen, MUSTARD, p)
+    if game_state == "playing":
 
-    # coins
-    for c in coins:
-        screen.blit(coin_image, (c.x, c.y))
+        # platform
+        for p in platforms:
+            pygame.draw.rect(screen, MUSTARD, p)
 
-    # enemies
-    for e in enemies:
-        screen.blit(enemy_image, (e.x, e.y))
+        # coins
+        for c in coins:
+            screen.blit(coin_image, (c.x, c.y))
 
-    # player
-    screen.blit(player_image, (player_x, player_y))
+        # enemies
+        for e in enemies:
+            screen.blit(enemy_image, (e.x, e.y))
 
-    #ui
-    score_text = font.render("Score : " + str(score), True, MUSTARD, DARK_GREY)
-    score_text = score_text.get_rect()
+        # player
+        screen.blit(player_image, (player_x, player_y))
+
+        #ui
+        score_text = font.render("Score : " + str(score), True, MUSTARD, DARK_GREY)
+        score_text_rect = score_text.get_rect()
+        score_text_rect.topleft = (580, 10)
+        screen.blit(score_text, score_text_rect)
+
+        for h in range(lives):
+            screen.blit(lives_image, (10 + (h*30), 10))
 
     # present screen
     pygame.display.flip()
