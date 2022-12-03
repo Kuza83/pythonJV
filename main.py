@@ -2,12 +2,23 @@
 # CONSTANT VARIABLE
 # -----------------
 
-import pygame.sprite
+import pygame
+import engine
+
+
+def drawtext(t, x, y):
+    text = font.render(t, True, MUSTARD, DARK_GREY)
+    text_rect = text.get_rect()
+    text_rect.topleft = (x, y)
+    screen.blit(text, text_rect)
+
 
 DARK_GREY = (50, 50, 50)
 MUSTARD = (209, 206, 25)
 GREEN = (0, 255, 0)
-SCREEN_SIZE = (700, 500)
+SCREEN_WIDTH = 700
+SCREEN_HEIGHT = 500
+SCREEN_SIZE = (SCREEN_WIDTH, SCREEN_HEIGHT)
 FPS = 60
 
 # ----
@@ -26,27 +37,37 @@ game_state = "playing"
 # LOAD
 # ----
 
-#player
+# player
 player_image = pygame.image.load("sprites/Mario_Idle0.png")
 player_x = 300
 player_y = 0
-player_width = 20
-player_height = 35
+player_width = 40
+player_height = 70
 
 player_speed = 0
 player_acceleration = 0.2
+player_direction = ""
+player_state = ""
 
 player_on_ground = True
 
+player_animation = engine.Animation([
+    pygame.image.load("sprites/Mario_Idle0.png"),
+    pygame.image.load("sprites/Mario_Idle1.png"),
+    pygame.image.load("sprites/Mario_Idle2.png"),
+    pygame.image.load("sprites/Mario_Idle3.png")
+])
+
+# UI
 score = 0
 
-#enemy
+# enemy
 enemy_image = pygame.image.load("images/spike_monster.png")
 enemies = [
     pygame.Rect(100, 220, 50, 26)
 ]
 
-#platform
+# platform
 platforms = [
     #middle
     pygame.Rect(100, 300, 400, 50),
@@ -56,14 +77,22 @@ platforms = [
     pygame.Rect(450, 250, 50, 50)
 ]
 
-#coin
+# coin
 coin_image = pygame.image.load("images/coin_0.png")
+coin_animation = engine.Animation([
+    pygame.image.load("images/coin_0.png"),
+    pygame.image.load("images/coin_1.png"),
+    pygame.image.load("images/coin_2.png"),
+    pygame.image.load("images/coin_3.png"),
+    pygame.image.load("images/coin_4.png"),
+    pygame.image.load("images/coin_5.png")
+])
 coins = [
     pygame.Rect(350, 270, 23, 23),
     pygame.Rect(200, 270, 23, 23)
 ]
 
-#lives
+# lives
 lives_image = pygame.image.load("images/heart.png")
 lives = 3
 
@@ -93,11 +122,13 @@ while running:
         new_player_y = player_y
 
         if keys[pygame.K_LEFT]:
-            new_player_x -= 2
+            new_player_x -= 3
+            player_direction = "left"
         if keys[pygame.K_RIGHT]:
-            new_player_x += 2
+            new_player_x += 3
+            player_direction = "right"
         if keys[pygame.K_SPACE] and player_on_ground:
-            player_speed = -5
+            player_speed = -6
 
         # ------
         # UPDATE
@@ -105,6 +136,7 @@ while running:
 
     if game_state == "playing":
 
+        # platform collision
         new_player_rect = pygame.Rect(new_player_x, player_y, player_width, player_height)
         x_collision = False
 
@@ -137,17 +169,35 @@ while running:
 
         player_rect = pygame.Rect(player_x, player_y, player_width, player_height)
 
+        if player_y > 500:
+            player_x = 300
+            player_y = -50
+            lives -= 1
+            player_speed = 0
+
+        # enemies collision
         for e in enemies:
             if e.colliderect(player_rect):
                 #enemies.remove(e)
                 lives -= 1
                 player_x = 300
-                player_y = 0
+                player_y = -50
+                player_speed = 0
 
+        # alive ?
+        if lives <= 0:
+            game_state = "lose"
+
+        # coin collect
         for c in coins:
             if c.colliderect(player_rect):
                 coins.remove(c)
                 score += 1
+                if score >= 2:
+                    game_state = "win"
+
+        coin_animation.update(10)
+        player_animation.update(12)
 
     # ----
     # DRAW
@@ -164,28 +214,39 @@ while running:
 
         # coins
         for c in coins:
-            screen.blit(coin_image, (c.x, c.y))
+            coin_animation.draw(screen, c.x, c.y)
 
         # enemies
         for e in enemies:
             screen.blit(enemy_image, (e.x, e.y))
 
         # player
-        screen.blit(player_image, (player_x, player_y))
+        if player_direction == "":
+            player_animation.draw(screen, player_x, player_y)
+        elif player_direction == "right":
+            screen.blit(player_image, (player_x, player_y))
+        elif player_direction == "left":
+            screen.blit(pygame.transform.flip(player_image, True, False), (player_x, player_y))
 
-        #ui
-        score_text = font.render("Score : " + str(score), True, MUSTARD, DARK_GREY)
-        score_text_rect = score_text.get_rect()
-        score_text_rect.topleft = (580, 10)
-        screen.blit(score_text, score_text_rect)
+        # score
+        screen.blit(coin_image, (600, 10))
+        drawtext(str(score), 633, 10)
 
+        # heart
         for h in range(lives):
             screen.blit(lives_image, (10 + (h*30), 10))
+
+    if game_state == "win":
+        drawtext("You win !!", 10, 10)
+
+    if game_state == "lose":
+        drawtext("You lose !!", 10, 10)
 
     # present screen
     pygame.display.flip()
 
     clock.tick(FPS)
+
 
 # ----
 # QUIT
