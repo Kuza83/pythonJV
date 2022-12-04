@@ -4,6 +4,7 @@
 
 import pygame
 import engine
+import utils
 
 
 def drawtext(t, x, y):
@@ -36,6 +37,8 @@ game_state = "playing"
 # ----
 # LOAD
 # ----
+
+entities = []
 
 # player
 player_image = pygame.image.load("sprites/Mario_Idle0.png")
@@ -93,18 +96,9 @@ platforms = [
 
 # coin
 coin_image = pygame.image.load("images/coin_0.png")
-coin_animation = engine.Animation([
-    pygame.image.load("images/coin_0.png"),
-    pygame.image.load("images/coin_1.png"),
-    pygame.image.load("images/coin_2.png"),
-    pygame.image.load("images/coin_3.png"),
-    pygame.image.load("images/coin_4.png"),
-    pygame.image.load("images/coin_5.png")
-])
-coins = [
-    pygame.Rect(350, 270, 23, 23),
-    pygame.Rect(200, 270, 23, 23)
-]
+
+entities.append(utils.makeCoin(350, 270))
+entities.append(utils.makeCoin(250, 270))
 
 # lives
 lives_image = pygame.image.load("images/heart.png")
@@ -206,15 +200,19 @@ while running:
         if lives <= 0:
             game_state = "lose"
 
-        # coin collect
-        for c in coins:
-            if c.colliderect(player_rect):
-                coins.remove(c)
-                score += 1
-                if score >= 2:
-                    game_state = "win"
+        # collect system
+        for entity in entities:
+            if entity.type == "collectable":
+                if entity.position.rect.colliderect(player_rect):
+                    entities.remove(entity)
+                    score += 1
+                    if score >= 3:
+                        game_state = "win"
 
-        coin_animation.update()
+        # update animations
+        for entity in entities:
+            entity.animations.animationList[entity.state].update()
+
         player_animation[player_state].update()
 
     # ----
@@ -230,9 +228,11 @@ while running:
         for p in platforms:
             pygame.draw.rect(screen, MUSTARD, p)
 
-        # coins
-        for c in coins:
-            coin_animation.draw(screen, c.x, c.y, False, False)
+        # draw system
+        for entity in entities:
+            s = entity.state
+            a = entity.animations.animationList[s]
+            a.draw(screen, entity.position.rect.x, entity.position.rect.y, False, False)
 
         # enemies
         for e in enemies:
