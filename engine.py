@@ -6,10 +6,10 @@ class Animation:
         self.imageList = imageList
         self.imageIndex = 0
         self.animationTimer = 0
-        self.animationSpeed = 0
+        self.animationSpeed = 5
 
-    def update(self, speed):
-        self.animationSpeed = speed
+    def update(self):
+        #self.animationSpeed = speed
         self.animationTimer += 1
         if self.animationTimer >= self.animationSpeed:
             self.animationTimer = 0
@@ -17,5 +17,5 @@ class Animation:
             if self.imageIndex > len(self.imageList) - 1:
                 self.imageIndex = 0
 
-    def draw(self, screen, x, y):
-        screen.blit(self.imageList[self.imageIndex], (x, y))
+    def draw(self, screen, x, y, flipX, flipY):
+        screen.blit(pygame.transform.flip(self.imageList[self.imageIndex], flipX, flipY), (x, y))

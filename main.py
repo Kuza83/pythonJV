@@ -46,17 +46,31 @@ player_height = 70
 
 player_speed = 0
 player_acceleration = 0.2
-player_direction = ""
-player_state = ""
+player_direction = "right"
+player_state = "idle"
 
 player_on_ground = True
 
-player_animation = engine.Animation([
-    pygame.image.load("sprites/Mario_Idle0.png"),
-    pygame.image.load("sprites/Mario_Idle1.png"),
-    pygame.image.load("sprites/Mario_Idle2.png"),
-    pygame.image.load("sprites/Mario_Idle3.png")
-])
+player_animation = {
+    "idle": engine.Animation([
+        pygame.image.load("sprites/Mario_Idle0.png"),
+        pygame.image.load("sprites/Mario_Idle1.png"),
+        pygame.image.load("sprites/Mario_Idle2.png"),
+        pygame.image.load("sprites/Mario_Idle3.png")
+    ]),
+    "walking": engine.Animation([
+        pygame.image.load("sprites/Mario_Run0.png"),
+        pygame.image.load("sprites/Mario_Run1.png"),
+        pygame.image.load("sprites/Mario_Run2.png"),
+        pygame.image.load("sprites/Mario_Run3.png"),
+        pygame.image.load("sprites/Mario_Run4.png"),
+        pygame.image.load("sprites/Mario_Run5.png"),
+        pygame.image.load("sprites/Mario_Run6.png"),
+        pygame.image.load("sprites/Mario_Run7.png")
+    ])
+}
+
+player_jump = pygame.image.load("images/Mario_Jump.png")
 
 # UI
 score = 0
@@ -124,11 +138,15 @@ while running:
         if keys[pygame.K_LEFT]:
             new_player_x -= 3
             player_direction = "left"
-        if keys[pygame.K_RIGHT]:
+            player_state = "walking"
+        elif keys[pygame.K_RIGHT]:
             new_player_x += 3
             player_direction = "right"
-        if keys[pygame.K_SPACE] and player_on_ground:
+            player_state = "walking"
+        elif keys[pygame.K_SPACE] and player_on_ground:
             player_speed = -6
+        else:
+            player_state = "idle"
 
         # ------
         # UPDATE
@@ -196,8 +214,8 @@ while running:
                 if score >= 2:
                     game_state = "win"
 
-        coin_animation.update(10)
-        player_animation.update(12)
+        coin_animation.update()
+        player_animation[player_state].update()
 
     # ----
     # DRAW
@@ -214,19 +232,19 @@ while running:
 
         # coins
         for c in coins:
-            coin_animation.draw(screen, c.x, c.y)
+            coin_animation.draw(screen, c.x, c.y, False, False)
 
         # enemies
         for e in enemies:
             screen.blit(enemy_image, (e.x, e.y))
 
         # player
-        if player_direction == "":
-            player_animation.draw(screen, player_x, player_y)
-        elif player_direction == "right":
-            screen.blit(player_image, (player_x, player_y))
+        if player_direction == "right":
+            player_animation[player_state].draw(screen, player_x, player_y, False, False)
         elif player_direction == "left":
-            screen.blit(pygame.transform.flip(player_image, True, False), (player_x, player_y))
+            player_animation[player_state].draw(screen, player_x, player_y, True, False)
+        elif player_state == "idle":
+            player_animation[player_state].draw(screen, player_x, player_y, False, False)
 
         # score
         screen.blit(coin_image, (600, 10))
@@ -244,9 +262,7 @@ while running:
 
     # present screen
     pygame.display.flip()
-
     clock.tick(FPS)
-
 
 # ----
 # QUIT
