@@ -41,7 +41,6 @@ game_state = "playing"
 entities = []
 
 # player
-player_image = pygame.image.load("sprites/Mario_Idle0.png")
 player_x = 300
 player_y = 0
 player_width = 40
@@ -54,35 +53,13 @@ player_state = "idle"
 
 player_on_ground = True
 
-player_animation = {
-    "idle": engine.Animation([
-        pygame.image.load("sprites/Mario_Idle0.png"),
-        pygame.image.load("sprites/Mario_Idle1.png"),
-        pygame.image.load("sprites/Mario_Idle2.png"),
-        pygame.image.load("sprites/Mario_Idle3.png")
-    ]),
-    "walking": engine.Animation([
-        pygame.image.load("sprites/Mario_Run0.png"),
-        pygame.image.load("sprites/Mario_Run1.png"),
-        pygame.image.load("sprites/Mario_Run2.png"),
-        pygame.image.load("sprites/Mario_Run3.png"),
-        pygame.image.load("sprites/Mario_Run4.png"),
-        pygame.image.load("sprites/Mario_Run5.png"),
-        pygame.image.load("sprites/Mario_Run6.png"),
-        pygame.image.load("sprites/Mario_Run7.png")
-    ])
-}
-
-player_jump = pygame.image.load("images/Mario_Jump.png")
+entities.append(utils.makePlayer(player_x, player_y))
 
 # UI
 score = 0
 
 # enemy
-enemy_image = pygame.image.load("images/spike_monster.png")
-enemies = [
-    pygame.Rect(100, 220, 50, 26)
-]
+entities.append(utils.makeEnemy(100, 220))
 
 # platform
 platforms = [
@@ -187,20 +164,11 @@ while running:
             lives -= 1
             player_speed = 0
 
-        # enemies collision
-        for e in enemies:
-            if e.colliderect(player_rect):
-                #enemies.remove(e)
-                lives -= 1
-                player_x = 300
-                player_y = -50
-                player_speed = 0
-
         # alive ?
         if lives <= 0:
             game_state = "lose"
 
-        # collect system
+        # collectible system
         for entity in entities:
             if entity.type == "collectable":
                 if entity.position.rect.colliderect(player_rect):
@@ -209,11 +177,20 @@ while running:
                     if score >= 3:
                         game_state = "win"
 
+        # enemy system
+        for entity in entities:
+            if entity.type == "dangerous":
+                if entity.position.rect.colliderect(player_rect):
+                    lives -= 1
+                    player_x = 300
+                    player_y = -50
+                    player_speed = 0
+
         # update animations
         for entity in entities:
             entity.animations.animationList[entity.state].update()
 
-        player_animation[player_state].update()
+        #player_animation[player_state].update()
 
     # ----
     # DRAW
@@ -233,10 +210,6 @@ while running:
             s = entity.state
             a = entity.animations.animationList[s]
             a.draw(screen, entity.position.rect.x, entity.position.rect.y, False, False)
-
-        # enemies
-        for e in enemies:
-            screen.blit(enemy_image, (e.x, e.y))
 
         # player
         if player_direction == "right":

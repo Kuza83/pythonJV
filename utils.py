@@ -17,3 +17,41 @@ def makeCoin(x, y):
     entity.animations.add("idle", entityAnimation)
     entity.type = "collectable"
     return entity
+
+
+enemy0 = pygame.image.load("images/spike_monster.png")
+
+
+def makeEnemy(x, y):
+    entity = engine.Entity()
+    entity.position = engine.Position(x, y, 50, 26)
+    entityAnimation = engine.Animation([enemy0])
+    entity.animations.add("idle", entityAnimation)
+    entity.type = "dangerous"
+    return entity
+
+
+idle0 = pygame.image.load("sprites/Mario_Idle0.png")
+idle1 = pygame.image.load("sprites/Mario_Idle1.png")
+idle2 = pygame.image.load("sprites/Mario_Idle2.png")
+idle3 = pygame.image.load("sprites/Mario_Idle3.png")
+
+walking0 = pygame.image.load("sprites/Mario_Run0.png")
+walking1 = pygame.image.load("sprites/Mario_Run1.png")
+walking2 = pygame.image.load("sprites/Mario_Run2.png")
+walking3 = pygame.image.load("sprites/Mario_Run3.png")
+walking4 = pygame.image.load("sprites/Mario_Run4.png")
+walking5 = pygame.image.load("sprites/Mario_Run5.png")
+walking6 = pygame.image.load("sprites/Mario_Run6.png")
+walking7 = pygame.image.load("sprites/Mario_Run7.png")
+
+
+def makePlayer(x, y):
+    entity = engine.Entity()
+    entity.position = engine.Position(x, y, 40, 70)
+    entityIdleAnimation = engine.Animation([idle0, idle1, idle2, idle3])
+    entityWalkingAnimation = engine.Animation([walking0, walking1, walking2, walking3, walking4, walking5, walking6, walking7])
+    entity.animations.add("idle", entityIdleAnimation)
+    entity.animations.add("walking", entityWalkingAnimation)
+    entity.type = "player"
+    return entity
