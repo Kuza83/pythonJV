@@ -2,6 +2,7 @@
 import pygame
 import engine
 
+
 coin0 = pygame.image.load("images/coin_0.png")
 coin1 = pygame.image.load("images/coin_1.png")
 coin2 = pygame.image.load("images/coin_2.png")

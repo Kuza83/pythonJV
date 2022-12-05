@@ -6,17 +6,10 @@ import pygame
 import engine
 import utils
 
-
-def drawtext(t, x, y):
-    text = font.render(t, True, MUSTARD, DARK_GREY)
-    text_rect = text.get_rect()
-    text_rect.topleft = (x, y)
-    screen.blit(text, text_rect)
-
-
 DARK_GREY = (50, 50, 50)
 MUSTARD = (209, 206, 25)
 GREEN = (0, 255, 0)
+
 SCREEN_WIDTH = 700
 SCREEN_HEIGHT = 500
 SCREEN_SIZE = (SCREEN_WIDTH, SCREEN_HEIGHT)
@@ -38,22 +31,26 @@ game_state = "playing"
 # LOAD
 # ----
 
+
+def drawtext(t, x, y):
+    text = font.render(t, True, MUSTARD, DARK_GREY)
+    text_rect = text.get_rect()
+    text_rect.topleft = (x, y)
+    screen.blit(text, text_rect)
+
+
 entities = []
 
 # player
-player_x = 300
-player_y = 0
-player_width = 40
-player_height = 70
-
 player_speed = 0
 player_acceleration = 0.2
-player_direction = "right"
-player_state = "idle"
 
 player_on_ground = True
 
-entities.append(utils.makePlayer(player_x, player_y))
+player = utils.makePlayer(300, 0)
+entities.append(player)
+
+player.camera = engine.Camera(0, 0, 400, 400)
 
 # UI
 score = 0
@@ -81,6 +78,10 @@ entities.append(utils.makeCoin(250, 270))
 lives_image = pygame.image.load("images/heart.png")
 lives = 3
 
+# camera
+cameraSys = engine.CameraSystem()
+
+
 running = True
 
 # ---------
@@ -103,21 +104,21 @@ while running:
 
     if game_state == "playing":
 
-        new_player_x = player_x
-        new_player_y = player_y
+        new_player_x = player.position.rect.x
+        new_player_y = player.position.rect.y
 
-        if keys[pygame.K_LEFT]:
+        if keys[pygame.K_SPACE] and player_on_ground:
+            player_speed = -6
+        elif keys[pygame.K_LEFT]:
             new_player_x -= 3
-            player_direction = "left"
-            player_state = "walking"
+            player.direction = "left"
+            player.state = "walking"
         elif keys[pygame.K_RIGHT]:
             new_player_x += 3
-            player_direction = "right"
-            player_state = "walking"
-        elif keys[pygame.K_SPACE] and player_on_ground:
-            player_speed = -6
+            player.direction = "right"
+            player.state = "walking"
         else:
-            player_state = "idle"
+            player.state = "idle"
 
         # ------
         # UPDATE
@@ -125,8 +126,12 @@ while running:
 
     if game_state == "playing":
 
+        # update animations
+        for entity in entities:
+            entity.animations.animationList[entity.state].update()
+
         # platform collision
-        new_player_rect = pygame.Rect(new_player_x, player_y, player_width, player_height)
+        new_player_rect = pygame.Rect(new_player_x, player.position.rect.y, player.position.rect.width, player.position.rect.height)
         x_collision = False
 
         for p in platforms:
@@ -135,12 +140,12 @@ while running:
                 break
 
         if not x_collision:
-            player_x = new_player_x
+            player.position.rect.x = new_player_x
 
         player_speed += player_acceleration
         new_player_y += player_speed
 
-        new_player_rect = pygame.Rect(player_x, new_player_y, player_width, player_height)
+        new_player_rect = pygame.Rect(player.position.rect.x, new_player_y, player.position.rect.width, player.position.rect.height)
 
         y_collision = False
         player_on_ground = False
@@ -150,17 +155,17 @@ while running:
                 y_collision = True
                 player_speed = 0
                 if p[1] > new_player_y:
-                    player_y = p[1] - player_height
+                    player.position.rect.y = p[1] - player.position.rect.height
                     player_on_ground = True
 
         if not y_collision:
-            player_y = new_player_y
+            player.position.rect.y = new_player_y
 
-        player_rect = pygame.Rect(player_x, player_y, player_width, player_height)
+        player_rect = pygame.Rect(player.position.rect.x, player.position.rect.y, player.position.rect.width, player.position.rect.height)
 
-        if player_y > 500:
-            player_x = 300
-            player_y = -50
+        if player.position.rect.y > 500:
+            player.position.rect.x = 300
+            player.position.rect.y = -50
             lives -= 1
             player_speed = 0
 
@@ -182,15 +187,9 @@ while running:
             if entity.type == "dangerous":
                 if entity.position.rect.colliderect(player_rect):
                     lives -= 1
-                    player_x = 300
-                    player_y = -50
+                    player.position.rect.x = 300
+                    player.position.rect.y = -50
                     player_speed = 0
-
-        # update animations
-        for entity in entities:
-            entity.animations.animationList[entity.state].update()
-
-        #player_animation[player_state].update()
 
     # ----
     # DRAW
@@ -199,39 +198,36 @@ while running:
     # background
     screen.fill(DARK_GREY)
 
-    if game_state == "playing":
+    cameraSys._update(screen, entities, platforms)
 
-        # platform
-        for p in platforms:
-            pygame.draw.rect(screen, MUSTARD, p)
+    # if game_state == "playing":
 
-        # draw system
-        for entity in entities:
-            s = entity.state
-            a = entity.animations.animationList[s]
-            a.draw(screen, entity.position.rect.x, entity.position.rect.y, False, False)
-
-        # player
-        if player_direction == "right":
-            player_animation[player_state].draw(screen, player_x, player_y, False, False)
-        elif player_direction == "left":
-            player_animation[player_state].draw(screen, player_x, player_y, True, False)
-        elif player_state == "idle":
-            player_animation[player_state].draw(screen, player_x, player_y, False, False)
-
-        # score
-        screen.blit(coin_image, (600, 10))
-        drawtext(str(score), 633, 10)
-
-        # heart
-        for h in range(lives):
-            screen.blit(lives_image, (10 + (h*30), 10))
-
-    if game_state == "win":
-        drawtext("You win !!", 10, 10)
-
-    if game_state == "lose":
-        drawtext("You lose !!", 10, 10)
+    #     # platform
+    #     for p in platforms:
+    #         pygame.draw.rect(screen, MUSTARD, p)
+    #
+    #     # draw system
+    #     for entity in entities:
+    #         s = entity.state
+    #         a = entity.animations.animationList[s]
+    #         if entity.direction == "right":
+    #             a.draw(screen, entity.position.rect.x, entity.position.rect.y, False, False)
+    #         elif entity.direction == "left":
+    #             a.draw(screen, entity.position.rect.x, entity.position.rect.y, True, False)
+    #
+    #     # score
+    #     screen.blit(coin_image, (600, 10))
+    #     drawtext(str(score), 633, 10)
+    #
+    #     # heart
+    #     for h in range(lives):
+    #         screen.blit(lives_image, (10 + (h*30), 10))
+    #
+    # if game_state == "win":
+    #     drawtext("You win !!", 10, 10)
+    #
+    # if game_state == "lose":
+    #     drawtext("You lose !!", 10, 10)
 
     # present screen
     pygame.display.flip()
