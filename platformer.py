@@ -50,13 +50,15 @@ player_on_ground = True
 player = utils.makePlayer(300, 0)
 entities.append(player)
 
-player.camera = engine.Camera(0, 0, 400, 400)
+player.camera = engine.Camera(10, 10, 400, 400)
 
 # UI
 score = 0
 
 # enemy
-entities.append(utils.makeEnemy(100, 220))
+enemy = utils.makeEnemy(100, 220)
+enemy.camera = engine.Camera(420, 10, 200, 200)
+entities.append(enemy)
 
 # platform
 platforms = [
@@ -131,7 +133,7 @@ while running:
             entity.animations.animationList[entity.state].update()
 
         # platform collision
-        new_player_rect = pygame.Rect(new_player_x, player.position.rect.y, player.position.rect.width, player.position.rect.height)
+        new_player_rect = pygame.Rect(int(new_player_x), int(player.position.rect.y), player.position.rect.width, player.position.rect.height)
         x_collision = False
 
         for p in platforms:
@@ -145,7 +147,7 @@ while running:
         player_speed += player_acceleration
         new_player_y += player_speed
 
-        new_player_rect = pygame.Rect(player.position.rect.x, new_player_y, player.position.rect.width, player.position.rect.height)
+        new_player_rect = pygame.Rect(int(player.position.rect.x), int(new_player_y), player.position.rect.width, player.position.rect.height)
 
         y_collision = False
         player_on_ground = False
@@ -161,7 +163,7 @@ while running:
         if not y_collision:
             player.position.rect.y = new_player_y
 
-        player_rect = pygame.Rect(player.position.rect.x, player.position.rect.y, player.position.rect.width, player.position.rect.height)
+        player_rect = pygame.Rect(int(player.position.rect.x), int(player.position.rect.y), player.position.rect.width, player.position.rect.height)
 
         if player.position.rect.y > 500:
             player.position.rect.x = 300
@@ -201,19 +203,6 @@ while running:
     cameraSys._update(screen, entities, platforms)
 
     # if game_state == "playing":
-
-    #     # platform
-    #     for p in platforms:
-    #         pygame.draw.rect(screen, MUSTARD, p)
-    #
-    #     # draw system
-    #     for entity in entities:
-    #         s = entity.state
-    #         a = entity.animations.animationList[s]
-    #         if entity.direction == "right":
-    #             a.draw(screen, entity.position.rect.x, entity.position.rect.y, False, False)
-    #         elif entity.direction == "left":
-    #             a.draw(screen, entity.position.rect.x, entity.position.rect.y, True, False)
     #
     #     # score
     #     screen.blit(coin_image, (600, 10))

@@ -8,7 +8,7 @@ class System:
     def check(self, entity):
         return True
 
-    def _update(self, screen, entity, entities, platforms):
+    def _update(self, screen, entities, platforms):
         for entity in entities:
             if self.check(entity):
                 self.update(screen, entity, entities, platforms)
@@ -18,6 +18,7 @@ class System:
 
 
 MUSTARD = (209, 206, 25)
+BLACK = (0, 0, 0)
 
 
 class CameraSystem(System):
@@ -28,8 +29,27 @@ class CameraSystem(System):
         return entity.camera is not None
 
     def update(self, screen, entity, entities, platforms):
+
+        # set clipping rectangle
+        cameraRect = entity.camera.rect
+        clipRect = pygame.Rect(cameraRect.x, cameraRect.y, cameraRect.w, cameraRect.h)
+        screen.set_clip(clipRect)
+
+        #fill camera background
+        screen.fill(BLACK)
+
+        # Draw platforms
         for p in platforms:
             pygame.draw.rect(screen, MUSTARD, p)
+
+        # Draw entities
+        for e in entities:
+            s = e.state
+            a = e.animations.animationList[s]
+            a.draw(screen, e.position.rect.x, e.position.rect.y, e.direction == "left", False)
+
+        # unset clipping rectangle
+        screen.set_clip(None)
 
 
 class Camera:
