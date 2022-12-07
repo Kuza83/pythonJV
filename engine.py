@@ -35,18 +35,41 @@ class CameraSystem(System):
         clipRect = pygame.Rect(cameraRect.x, cameraRect.y, cameraRect.w, cameraRect.h)
         screen.set_clip(clipRect)
 
+        # update cam if tracking entity
+        if entity.camera.entityToTrack is not None:
+
+            trackedEntity = entity.camera.entityToTrack
+
+            currentX = entity.camera.worldX
+            currentY = entity.camera.worldY
+
+            targetX = trackedEntity.position.rect.x + trackedEntity.position.rect.w/2
+            targetY = trackedEntity.position.rect.y + trackedEntity.position.rect.h/2
+
+            entity.camera.worldX = (currentX * 0.90) + (targetX * 0.1)
+            entity.camera.worldY = (currentY * 0.90) + (targetY * 0.1)
+
+        # calculate offsets
+        offsetX = cameraRect.x + cameraRect.w/2 - (entity.camera.worldX * entity.camera.zoomLevel)
+        offsetY = cameraRect.y + cameraRect.h/2 - (entity.camera.worldY * entity.camera.zoomLevel)
+
         #fill camera background
         screen.fill(BLACK)
 
         # Draw platforms
         for p in platforms:
-            pygame.draw.rect(screen, MUSTARD, p)
+            newPosRect = pygame.Rect(
+                (p.x * entity.camera.zoomLevel) + offsetX,
+                (p.y* entity.camera.zoomLevel) + offsetY,
+                p.w ,
+                p.h )
+            pygame.draw.rect(screen, MUSTARD, newPosRect)
 
         # Draw entities
         for e in entities:
             s = e.state
             a = e.animations.animationList[s]
-            a.draw(screen, e.position.rect.x, e.position.rect.y, e.direction == "left", False)
+            a.draw(screen, e.position.rect.x + offsetX, e.position.rect.y + offsetY, e.direction == "left", False, entity.camera.zoomLevel)
 
         # unset clipping rectangle
         screen.set_clip(None)
@@ -57,10 +80,15 @@ class Camera:
         self.rect = pygame.Rect(x, y, w, h)
         self.worldX = 0
         self.worldY = 0
+        self.entityToTrack = None
+        self.zoomLevel = 1
 
-    def setWorldPOs(self, x, y):
+    def setWorldPos(self, x, y):
         self.worldX = x
         self.worldY = y
+
+    def trackEntity(self, e):
+        self.entityToTrack = e
 
 
 class Position:
@@ -91,8 +119,11 @@ class Animation:
             if self.imageIndex > len(self.imageList) - 1:
                 self.imageIndex = 0
 
-    def draw(self, screen, x, y, flipX, flipY):
-        screen.blit(pygame.transform.flip(self.imageList[self.imageIndex], flipX, flipY), (x, y))
+    def draw(self, screen, x, y, flipX, flipY, zoomLevel):
+        image = self.imageList[self.imageIndex]
+        newWidth = image.get_rect().w * zoomLevel
+        newHeight = image.get_rect().h * zoomLevel
+        screen.blit(pygame.transform.scale(pygame.transform.flip(image, flipX, flipY), (newWidth, newHeight)), (x, y))
 
 
 class Entity:

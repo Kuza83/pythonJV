@@ -51,7 +51,8 @@ player = utils.makePlayer(300, 0)
 entities.append(player)
 
 player.camera = engine.Camera(10, 10, 400, 400)
-player.camera.setWorldPOs(300, 250)
+player.camera.setWorldPos(300, 0)
+player.camera.trackEntity(player)
 
 # UI
 score = 0
@@ -59,7 +60,7 @@ score = 0
 # enemy
 enemy = utils.makeEnemy(100, 220)
 enemy.camera = engine.Camera(420, 10, 200, 200)
-enemy.camera.setWorldPOs(150, 250)
+enemy.camera.setWorldPos(150, 250)
 entities.append(enemy)
 
 # platform
@@ -123,6 +124,13 @@ while running:
             player.state = "walking"
         else:
             player.state = "idle"
+        # zoom control
+        # zoom in
+        if keys[pygame.K_z]:
+            player.camera.zoomLevel += 0.01
+
+        if keys[pygame.K_d]:
+            player.camera.zoomLevel -= 0.01
 
         # ------
         # UPDATE
@@ -202,7 +210,6 @@ while running:
     # background
     screen.fill(DARK_GREY)
 
-    cameraSys.update(screen, entities, platforms)
     cameraSys.update(screen, entities, platforms)
 
     # if game_state == "playing":
