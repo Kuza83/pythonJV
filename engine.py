@@ -8,12 +8,12 @@ class System:
     def check(self, entity):
         return True
 
-    def _update(self, screen, entities, platforms):
+    def update(self, screen, entities, platforms):
         for entity in entities:
             if self.check(entity):
-                self.update(screen, entity, entities, platforms)
+                self.updateEntity(screen, entity, entities, platforms)
 
-    def update(self, screen, entity, entities, platforms):
+    def updateEntity(self, screen, entity, entities, platforms):
         pass
 
 
@@ -28,7 +28,7 @@ class CameraSystem(System):
     def check(self, entity):
         return entity.camera is not None
 
-    def update(self, screen, entity, entities, platforms):
+    def updateEntity(self, screen, entity, entities, platforms):
 
         # set clipping rectangle
         cameraRect = entity.camera.rect
@@ -55,6 +55,12 @@ class CameraSystem(System):
 class Camera:
     def __init__(self, x, y, w, h):
         self.rect = pygame.Rect(x, y, w, h)
+        self.worldX = 0
+        self.worldY = 0
+
+    def setWorldPOs(self, x, y):
+        self.worldX = x
+        self.worldY = y
 
 
 class Position:

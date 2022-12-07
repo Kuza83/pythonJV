@@ -51,6 +51,7 @@ player = utils.makePlayer(300, 0)
 entities.append(player)
 
 player.camera = engine.Camera(10, 10, 400, 400)
+player.camera.setWorldPOs(300, 250)
 
 # UI
 score = 0
@@ -58,6 +59,7 @@ score = 0
 # enemy
 enemy = utils.makeEnemy(100, 220)
 enemy.camera = engine.Camera(420, 10, 200, 200)
+enemy.camera.setWorldPOs(150, 250)
 entities.append(enemy)
 
 # platform
@@ -200,7 +202,8 @@ while running:
     # background
     screen.fill(DARK_GREY)
 
-    cameraSys._update(screen, entities, platforms)
+    cameraSys.update(screen, entities, platforms)
+    cameraSys.update(screen, entities, platforms)
 
     # if game_state == "playing":
     #
