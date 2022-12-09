@@ -80,9 +80,11 @@ level1 = level.Level(
         pygame.Rect(450, 250, 50, 50)
     ],
     entities=[
-
+        player, enemy
     ]
 )
+
+world = level1
 
 running = True
 
@@ -136,14 +138,14 @@ while running:
     if game_state == "playing":
 
         # update animations
-        for entity in entities:
+        for entity in world.entities:
             entity.animations.animationList[entity.state].update()
 
         # platform collision
         new_player_rect = pygame.Rect(int(new_player_x), int(player.position.rect.y), player.position.rect.width, player.position.rect.height)
         x_collision = False
 
-        for p in platforms:
+        for p in world.platforms:
             if p.colliderect(new_player_rect):
                 x_collision = True
                 break
@@ -159,7 +161,7 @@ while running:
         y_collision = False
         player_on_ground = False
 
-        for p in platforms:
+        for p in world.platforms:
             if p.colliderect(new_player_rect):
                 y_collision = True
                 player_speed = 0
@@ -183,16 +185,16 @@ while running:
             game_state = "lose"
 
         # collectible system
-        for entity in entities:
+        for entity in world.entities:
             if entity.type == "collectable":
                 if entity.position.rect.colliderect(player_rect):
-                    entities.remove(entity)
+                    world.entities.remove(entity)
                     player.score.score += 1
                     if player.score.score >= 3:
                         game_state = "win"
 
         # enemy system
-        for entity in entities:
+        for entity in world.entities:
             if entity.type == "dangerous":
                 if entity.position.rect.colliderect(player_rect):
                     player.battle.lives -= 1
@@ -207,7 +209,7 @@ while running:
     # background
     screen.fill(utils.DARK_GREY)
 
-    cameraSys.update(screen, entities, platforms)
+    cameraSys.update(screen, world.entities, world.platforms)
     #
     # if game_state == "win":
     #     drawtext("You win !!", 10, 10)
