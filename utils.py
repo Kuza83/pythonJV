@@ -3,6 +3,24 @@ import pygame
 import engine
 
 
+MUSTARD = (209, 206, 25)
+BLACK = (0, 0, 0)
+DARK_GREY = (50, 50, 50)
+
+pygame.font.init()
+font = pygame.font.Font(pygame.font.get_default_font(), 24)
+
+# lives
+lives_image = pygame.image.load("images/heart.png")
+
+
+def drawtext(screen, t, x, y):
+    text = font.render(t, True, MUSTARD)
+    text_rect = text.get_rect()
+    text_rect.topleft = (x, y)
+    screen.blit(text, text_rect)
+
+
 coin0 = pygame.image.load("images/coin_0.png")
 coin1 = pygame.image.load("images/coin_1.png")
 coin2 = pygame.image.load("images/coin_2.png")

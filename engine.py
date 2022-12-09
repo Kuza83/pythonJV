@@ -1,4 +1,5 @@
 import pygame
+import utils
 
 
 class System:
@@ -17,10 +18,6 @@ class System:
         pass
 
 
-MUSTARD = (209, 206, 25)
-BLACK = (0, 0, 0)
-
-
 class CameraSystem(System):
     def __init__(self):
         super(CameraSystem, self).__init__()
@@ -37,39 +34,54 @@ class CameraSystem(System):
 
         # update cam if tracking entity
         if entity.camera.entityToTrack is not None:
-
             trackedEntity = entity.camera.entityToTrack
 
             currentX = entity.camera.worldX
             currentY = entity.camera.worldY
 
-            targetX = trackedEntity.position.rect.x + trackedEntity.position.rect.w/2
-            targetY = trackedEntity.position.rect.y + trackedEntity.position.rect.h/2
+            targetX = trackedEntity.position.rect.x + trackedEntity.position.rect.w / 2
+            targetY = trackedEntity.position.rect.y + trackedEntity.position.rect.h / 2
 
             entity.camera.worldX = (currentX * 0.90) + (targetX * 0.1)
             entity.camera.worldY = (currentY * 0.90) + (targetY * 0.1)
 
         # calculate offsets
-        offsetX = cameraRect.x + cameraRect.w/2 - (entity.camera.worldX * entity.camera.zoomLevel)
-        offsetY = cameraRect.y + cameraRect.h/2 - (entity.camera.worldY * entity.camera.zoomLevel)
+        offsetX = cameraRect.x + cameraRect.w / 2 - (entity.camera.worldX * entity.camera.zoomLevel)
+        offsetY = cameraRect.y + cameraRect.h / 2 - (entity.camera.worldY * entity.camera.zoomLevel)
 
-        #fill camera background
-        screen.fill(BLACK)
+        # fill camera background
+        screen.fill(utils.BLACK)
 
         # Draw platforms
         for p in platforms:
             newPosRect = pygame.Rect(
                 (p.x * entity.camera.zoomLevel) + offsetX,
-                (p.y* entity.camera.zoomLevel) + offsetY,
-                p.w ,
-                p.h )
-            pygame.draw.rect(screen, MUSTARD, newPosRect)
+                (p.y * entity.camera.zoomLevel) + offsetY,
+                p.w * entity.camera.zoomLevel,
+                p.h * entity.camera.zoomLevel)
+            pygame.draw.rect(screen, utils.MUSTARD, newPosRect)
 
         # Draw entities
         for e in entities:
             s = e.state
             a = e.animations.animationList[s]
-            a.draw(screen, e.position.rect.x + offsetX, e.position.rect.y + offsetY, e.direction == "left", False, entity.camera.zoomLevel)
+            a.draw(screen,
+                   (e.position.rect.x * entity.camera.zoomLevel) + offsetX,
+                   (e.position.rect.y * entity.camera.zoomLevel) + offsetY,
+                   e.direction == "left",
+                   False,
+                   entity.camera.zoomLevel)
+
+        # player HUD
+        # score
+        if entity.score is not None:
+            screen.blit(utils.coin0, (entity.camera.rect.w - 50, entity.camera.rect.y + 10))
+            utils.drawtext(screen, str(entity.score.score), entity.camera.rect.w - 20, entity.camera.rect.y + 10)
+
+        # # heart
+        if entity.battle is not None:
+            for h in range(entity.battle.lives):
+                screen.blit(utils.lives_image, (entity.camera.rect.x + 10 + (h*30), entity.camera.rect.y + 10))
 
         # unset clipping rectangle
         screen.set_clip(None)
@@ -121,9 +133,19 @@ class Animation:
 
     def draw(self, screen, x, y, flipX, flipY, zoomLevel):
         image = self.imageList[self.imageIndex]
-        newWidth = image.get_rect().w * zoomLevel
-        newHeight = image.get_rect().h * zoomLevel
+        newWidth = int(image.get_rect().w * zoomLevel)
+        newHeight = int(image.get_rect().h * zoomLevel)
         screen.blit(pygame.transform.scale(pygame.transform.flip(image, flipX, flipY), (newWidth, newHeight)), (x, y))
+
+
+class Score:
+    def __init__(self):
+        self.score = 0
+
+
+class Battle:
+    def __init__(self):
+        self.lives = 3
 
 
 class Entity:
@@ -134,3 +156,5 @@ class Entity:
         self.animations = Animations()
         self.direction = "right"
         self.camera = None
+        self.score = None
+        self.battle = None
