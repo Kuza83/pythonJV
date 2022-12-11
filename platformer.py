@@ -6,18 +6,16 @@ import pygame
 import engine
 import utils
 import level
+import scene
+import globals
 
-SCREEN_WIDTH = 700
-SCREEN_HEIGHT = 500
-SCREEN_SIZE = (SCREEN_WIDTH, SCREEN_HEIGHT)
-FPS = 60
 
 # ----
 # INIT
 # ----
 
 pygame.init()
-screen = pygame.display.set_mode(SCREEN_SIZE)
+screen = pygame.display.set_mode(globals.SCREEN_SIZE)
 pygame.display.set_caption("Mario Like")
 clock = pygame.time.Clock()
 
@@ -108,7 +106,11 @@ level2 = level.Level(
 )
 
 
-world = level2
+world = level1
+
+sceneManager = scene.SceneManager()
+mainMenu = scene.MainMenuScene()
+sceneManager.push(mainMenu)
 
 running = True
 
@@ -117,6 +119,15 @@ running = True
 # ---------
 
 while running:
+
+    if sceneManager.isEmpty():
+        running = False
+
+    sceneManager.input()
+
+    sceneManager.update()
+
+    sceneManager.draw(screen)
 
     # -----
     # INPUT
@@ -235,20 +246,15 @@ while running:
     # DRAW
     # ----
 
-    # background
-    screen.fill(utils.DARK_GREY)
-
-    cameraSys.update(screen, world)
+    # cameraSys.update(screen, world)
+    # #
+    # # if game_state == "win":
+    # #     drawtext("You win !!", 10, 10)
+    # #
+    # # if game_state == "lose":
+    # #     drawtext("You lose !!", 10, 10)
     #
-    # if game_state == "win":
-    #     drawtext("You win !!", 10, 10)
-    #
-    # if game_state == "lose":
-    #     drawtext("You lose !!", 10, 10)
-
-    # present screen
-    pygame.display.flip()
-    clock.tick(FPS)
+    clock.tick(globals.FPS)
 
 # ----
 # QUIT

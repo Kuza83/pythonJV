@@ -1,5 +1,6 @@
 import pygame
-from pygame.locals import *
+import utils
+import globals
 
 
 class Scene:
@@ -18,71 +19,86 @@ class Scene:
     def update(self, sm):
         pass
 
-    def draw(self, sm):
+    def draw(self, sm, screen):
         pass
 
 
 class MainMenuScene(Scene):
-    def onEnter(self):
-        print("entre dans le main menu")
-
-    def onExit(self):
-        print("sort du main menu")
 
     def input(self, sm):
         keys = pygame.key.get_pressed()
         if keys[pygame.K_RETURN]:
-            sm.push(LevelSelectScene())
+            sm.push(FadeTransitionScene(self, LevelSelectScene()))
         if keys[pygame.K_q]:
             sm.pop()
 
-    def update(self, sm):
-        print("main menu update")
-
-    def draw(self, sm):
-        print("main menu draw")
+    def draw(self, sm, screen):
+        # background
+        screen.fill(globals.DARK_GREY)
+        utils.drawtext(screen, "Main Menu. [Return=Levels, Q=Quit]", 10, 50)
 
 
 class LevelSelectScene(Scene):
-    def onEnter(self):
-        print("entre dans la selection lvl")
-
-    def onExit(self):
-        print("sort de la selection lvl")
 
     def input(self, sm):
         keys = pygame.key.get_pressed()
         if keys[pygame.K_1]:
-            sm.push(GameScene())
+            sm.push(FadeTransitionScene(self, GameScene()))
         if keys[pygame.K_2]:
-            sm.push(GameScene())
+            sm.push(FadeTransitionScene(self, GameScene()))
         if keys[pygame.K_LSHIFT]:
             sm.pop()
+            sm.push(FadeTransitionScene(self, None))
 
-    def update(self, sm):
-        print("lvl select update")
-
-    def draw(self, sm):
-        print("lvl select draw")
+    def draw(self, sm, screen):
+        # background
+        screen.fill(globals.DARK_GREY)
+        utils.drawtext(screen, "Level Select. [Level 1=Num1, Level 2=Num2, ShiftL=Return Main Menu]", 10, 50)
 
 
 class GameScene(Scene):
-    def onEnter(self):
-        print("entre dans la game scene")
-
-    def onExit(self):
-        print("sort de la game scene")
 
     def input(self, sm):
         keys = pygame.key.get_pressed()
         if keys[pygame.K_q]:
             sm.pop()
+            sm.push(FadeTransitionScene(self, None))
+
+    def draw(self, sm, screen):
+        # background
+        screen.fill(globals.DARK_GREY)
+
+
+class TransitionScene(Scene):
+    def __init__(self, fromScene, toScene):
+        super().__init__()
+        self.currentPercentage = 0
+        self.fromScene = fromScene
+        self.toScene = toScene
 
     def update(self, sm):
-        print("game scene update")
+        self.currentPercentage += 2
+        if self.currentPercentage >= 100:
+            sm.pop()
+            if self.toScene is not None:
+                sm.push(self.toScene)
 
-    def draw(self, sm):
-        print("game scene draw")
+
+class FadeTransitionScene(TransitionScene):
+    def draw(self, sm, screen):
+        if self.currentPercentage < 50:
+            self.fromScene.draw(sm, screen)
+        else:
+            if self.toScene is None:
+                sm.scenes[-2].draw(sm, screen)
+            else:
+                self.toScene.draw(sm, screen)
+        # fade overlay
+        overlay = pygame.Surface(globals.SCREEN_SIZE)
+        alpha = int(abs((255-((255/50) * self.currentPercentage))))
+        overlay.set_alpha(255 - alpha)
+        overlay.fill(globals.BLACK)
+        screen.blit(overlay, (0, 0))
 
 
 class SceneManager:
@@ -108,9 +124,10 @@ class SceneManager:
         if len(self.scenes) > 0:
             self.scenes[-1].update(self)
 
-    def draw(self):
+    def draw(self, screen):
         if len(self.scenes) > 0:
-            self.scenes[-1].draw(self)
+            self.scenes[-1].draw(self, screen)
+        utils.drawtext(screen, str(len(self.scenes)), 0, 0)
         # present screen
         pygame.display.flip()
 

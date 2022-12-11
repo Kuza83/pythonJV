@@ -1,11 +1,8 @@
 
 import pygame
 import engine
+import globals
 
-
-MUSTARD = (209, 206, 25)
-BLACK = (0, 0, 0)
-DARK_GREY = (50, 50, 50)
 
 pygame.font.init()
 font = pygame.font.Font(pygame.font.get_default_font(), 24)
@@ -15,7 +12,7 @@ lives_image = pygame.image.load("images/heart.png")
 
 
 def drawtext(screen, t, x, y):
-    text = font.render(t, True, MUSTARD)
+    text = font.render(t, True, globals.MUSTARD)
     text_rect = text.get_rect()
     text_rect.topleft = (x, y)
     screen.blit(text, text_rect)
