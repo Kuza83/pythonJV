@@ -1,5 +1,9 @@
 import pygame
 
+levels = {}
+world = None
+
+
 SCREEN_WIDTH = 700
 SCREEN_HEIGHT = 500
 SCREEN_SIZE = (SCREEN_WIDTH, SCREEN_HEIGHT)

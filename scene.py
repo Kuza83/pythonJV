@@ -1,6 +1,7 @@
 import pygame
 import utils
 import globals
+import engine
 
 
 class Scene:
@@ -43,8 +44,10 @@ class LevelSelectScene(Scene):
     def input(self, sm):
         keys = pygame.key.get_pressed()
         if keys[pygame.K_1]:
+            # set level to 1
             sm.push(FadeTransitionScene(self, GameScene()))
         if keys[pygame.K_2]:
+            # set level to 2
             sm.push(FadeTransitionScene(self, GameScene()))
         if keys[pygame.K_LSHIFT]:
             sm.pop()
@@ -57,6 +60,8 @@ class LevelSelectScene(Scene):
 
 
 class GameScene(Scene):
+    def __init__(self):
+        self.cameraSystem = engine.CameraSystem()
 
     def input(self, sm):
         keys = pygame.key.get_pressed()
@@ -67,6 +72,7 @@ class GameScene(Scene):
     def draw(self, sm, screen):
         # background
         screen.fill(globals.DARK_GREY)
+        self.cameraSystem.update(screen)
 
 
 class TransitionScene(Scene):

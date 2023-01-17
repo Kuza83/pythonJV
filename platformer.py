@@ -18,7 +18,6 @@ pygame.init()
 screen = pygame.display.set_mode(globals.SCREEN_SIZE)
 pygame.display.set_caption("Mario Like")
 clock = pygame.time.Clock()
-
 game_state = "playing"
 
 # ----
@@ -77,7 +76,7 @@ def wonLevel(level):
     return False
 
 
-level1 = level.Level(
+globals.levels[1] = level.Level(
     platforms=[
         # middle
         pygame.Rect(100, 300, 400, 50),
@@ -93,7 +92,7 @@ level1 = level.Level(
     loseFunc=lostLevel
 )
 
-level2 = level.Level(
+globals.levels[2] = level.Level(
     platforms=[
         # middle
         pygame.Rect(100, 300, 400, 50)
@@ -106,7 +105,7 @@ level2 = level.Level(
 )
 
 
-world = level1
+globals.world = globals.levels[1]
 
 sceneManager = scene.SceneManager()
 mainMenu = scene.MainMenuScene()
@@ -124,9 +123,7 @@ while running:
         running = False
 
     sceneManager.input()
-
     sceneManager.update()
-
     sceneManager.draw(screen)
 
     # -----
@@ -173,7 +170,7 @@ while running:
     if game_state == "playing":
 
         # update animations
-        for entity in world.entities:
+        for entity in globals.world.entities:
             entity.animations.animationList[entity.state].update()
 
         # platform collision
@@ -181,7 +178,7 @@ while running:
                                       player.position.rect.height)
         x_collision = False
 
-        for p in world.platforms:
+        for p in globals.world.platforms:
             if p.colliderect(new_player_rect):
                 x_collision = True
                 break
@@ -198,7 +195,7 @@ while running:
         y_collision = False
         player_on_ground = False
 
-        for p in world.platforms:
+        for p in globals.world.platforms:
             if p.colliderect(new_player_rect):
                 y_collision = True
                 player_speed = 0
@@ -219,14 +216,14 @@ while running:
             player_speed = 0
 
         # collectible system
-        for entity in world.entities:
+        for entity in globals.world.entities:
             if entity.type == "collectable":
                 if entity.position.rect.colliderect(player_rect):
-                    world.entities.remove(entity)
+                    globals.world.entities.remove(entity)
                     player.score.score += 1
 
         # enemy system
-        for entity in world.entities:
+        for entity in globals.world.entities:
             if entity.type == "dangerous":
                 if entity.position.rect.colliderect(player_rect):
                     player.battle.lives -= 1
@@ -234,11 +231,11 @@ while running:
                     player.position.rect.y = -50
                     player_speed = 0
 
-    if world.isWon():
+    if globals.world.isWon():
         if player.score.score >= 3:
             game_state = "win"
 
-    if world.isLost():
+    if globals.world.isLost():
         if player.battle.lives <= 0:
             game_state = "lose"
 
