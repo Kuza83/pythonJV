@@ -58,8 +58,8 @@ entities.append(coin2)
 cameraSys = engine.CameraSystem()
 
 
-def lostLevel(level):
-    for entity in level.entities:
+def lostLevel(levels):
+    for entity in levels.entities:
         if entity.type == "player":
             if entity.battle is not None:
                 if entity.battle.lives > 0:
@@ -67,8 +67,8 @@ def lostLevel(level):
     return True
 
 
-def wonLevel(level):
-    for entity in level.entities:
+def wonLevel(levels):
+    for entity in levels.entities:
         if entity.type == "player":
             if entity.score.score is not None:
                 if entity.score.score == 3:
@@ -231,26 +231,18 @@ while running:
                     player.position.rect.y = -50
                     player_speed = 0
 
-    if globals.world.isWon():
-        if player.score.score >= 3:
-            game_state = "win"
-
-    if globals.world.isLost():
-        if player.battle.lives <= 0:
-            game_state = "lose"
+    # if globals.world.isWon():
+    #     if player.score.score >= 3:
+    #         game_state = "win"
+    #
+    # if globals.world.isLost():
+    #     if player.battle.lives <= 0:
+    #         game_state = "lose"
 
     # ----
     # DRAW
     # ----
 
-    # cameraSys.update(screen, world)
-    # #
-    # # if game_state == "win":
-    # #     drawtext("You win !!", 10, 10)
-    # #
-    # # if game_state == "lose":
-    # #     drawtext("You lose !!", 10, 10)
-    #
     clock.tick(globals.FPS)
 
 # ----

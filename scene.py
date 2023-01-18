@@ -25,7 +25,6 @@ class Scene:
 
 
 class MainMenuScene(Scene):
-
     def input(self, sm):
         keys = pygame.key.get_pressed()
         if keys[pygame.K_RETURN]:
@@ -40,14 +39,15 @@ class MainMenuScene(Scene):
 
 
 class LevelSelectScene(Scene):
-
     def input(self, sm):
         keys = pygame.key.get_pressed()
         if keys[pygame.K_1]:
             # set level to 1
+            globals.world = globals.levels[1]
             sm.push(FadeTransitionScene(self, GameScene()))
         if keys[pygame.K_2]:
             # set level to 2
+            globals.world = globals.levels[2]
             sm.push(FadeTransitionScene(self, GameScene()))
         if keys[pygame.K_LSHIFT]:
             sm.pop()
@@ -56,7 +56,7 @@ class LevelSelectScene(Scene):
     def draw(self, sm, screen):
         # background
         screen.fill(globals.DARK_GREY)
-        utils.drawtext(screen, "Level Select. [Level 1=Num1, Level 2=Num2, ShiftL=Return Main Menu]", 10, 50)
+        utils.drawtext(screen, "Level Select. [1/2=Level, ShiftL=Return Main Menu]", 10, 50)
 
 
 class GameScene(Scene):
@@ -68,11 +68,39 @@ class GameScene(Scene):
         if keys[pygame.K_q]:
             sm.pop()
             sm.push(FadeTransitionScene(self, None))
+        if globals.world.isWon():
+            sm.push(WinScene())
+            sm.push(FadeTransitionScene(self, None))
+        if globals.world.isLost():
+            sm.push(LoseScene())
+            sm.push(FadeTransitionScene(self, None))
 
     def draw(self, sm, screen):
         # background
         screen.fill(globals.DARK_GREY)
         self.cameraSystem.update(screen)
+
+
+class WinScene(Scene):
+    def __init__(self):
+        self.cameraSystem = engine.CameraSystem()
+
+    def input(self, sm):
+        pass
+
+    def draw(self, sm, screen):
+        utils.drawtext(screen, "YOU WIN !!!!!", 10, 50)
+
+
+class LoseScene(Scene):
+    def __init__(self):
+        self.cameraSystem = engine.CameraSystem()
+
+    def input(self, sm):
+        pass
+
+    def draw(self, sm, screen):
+        utils.drawtext(screen, "YOU LOSE !!!!!", 10, 50)
 
 
 class TransitionScene(Scene):
