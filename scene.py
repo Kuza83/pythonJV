@@ -82,24 +82,28 @@ class GameScene(Scene):
 
 
 class WinScene(Scene):
-    def __init__(self):
-        self.cameraSystem = engine.CameraSystem()
-
-    def input(self, sm):
-        pass
+    # def __init__(self):
+    #     self.cameraSystem = engine.CameraSystem()
+    #
+    # def input(self, sm):
+    #     pass
 
     def draw(self, sm, screen):
+        if len(sm.scenes) > 1:
+            sm.scenes[-2].draw(sm, screen)
         utils.drawtext(screen, "YOU WIN !!!!!", 10, 50)
 
 
 class LoseScene(Scene):
-    def __init__(self):
-        self.cameraSystem = engine.CameraSystem()
-
-    def input(self, sm):
-        pass
+    # def __init__(self):
+    #     self.cameraSystem = engine.CameraSystem()
+    #
+    # def input(self, sm):
+    #     pass
 
     def draw(self, sm, screen):
+        if len(sm.scenes) > 1:
+            sm.scenes[-2].draw(sm, screen)
         utils.drawtext(screen, "YOU LOSE !!!!!", 10, 50)
 
 
