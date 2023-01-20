@@ -7,15 +7,26 @@ import globals
 pygame.font.init()
 font = pygame.font.Font(pygame.font.get_default_font(), 24)
 
+
+def blit_alpha(target, source, location, opacity):
+    x = location[0]
+    y = location[1]
+    temp = pygame.Surface((source.get_width(), source.get_height())).convert()
+    temp.blit(target, (-x, -y))
+    temp.blit(source, (0, 0))
+    temp.set_alpha(opacity)
+    target.blit(temp, location)
+
+
 # lives
 lives_image = pygame.image.load("images/heart.png")
 
 
-def drawtext(screen, t, x, y):
-    text = font.render(t, True, globals.MUSTARD)
+def drawtext(screen, t, x, y, fg, alpha):
+    text = font.render(t, True, fg)
     text_rect = text.get_rect()
     text_rect.topleft = (x, y)
-    screen.blit(text, text_rect)
+    blit_alpha(screen, text, (x, y), alpha)
 
 
 coin0 = pygame.image.load("images/coin_0.png")

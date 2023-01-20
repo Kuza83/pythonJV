@@ -77,7 +77,7 @@ class CameraSystem(System):
         # score
         if entity.score is not None:
             screen.blit(utils.coin0, (entity.camera.rect.w - 50, entity.camera.rect.y + 10))
-            utils.drawtext(screen, str(entity.score.score), entity.camera.rect.w - 20, entity.camera.rect.y + 10)
+            utils.drawtext(screen, str(entity.score.score), entity.camera.rect.w - 20, entity.camera.rect.y + 10, globals.WHITE, 0)
 
         # # heart
         if entity.battle is not None:
