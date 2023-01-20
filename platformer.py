@@ -8,6 +8,7 @@ import utils
 import level
 import scene
 import globals
+import inputstream
 
 
 # ----
@@ -111,6 +112,8 @@ sceneManager = scene.SceneManager()
 mainMenu = scene.MainMenuScene()
 sceneManager.push(mainMenu)
 
+inputStream = inputstream.InputStream()
+
 running = True
 
 # ---------
@@ -122,7 +125,7 @@ while running:
     if sceneManager.isEmpty():
         running = False
 
-    sceneManager.input()
+    sceneManager.input(inputstream)
     sceneManager.update()
     sceneManager.draw(screen)
 

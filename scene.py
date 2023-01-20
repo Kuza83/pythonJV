@@ -14,7 +14,7 @@ class Scene:
     def onExit(self):
         pass
 
-    def input(self, sm):
+    def input(self, sm, inputStream):
         pass
 
     def update(self, sm):
@@ -25,7 +25,7 @@ class Scene:
 
 
 class MainMenuScene(Scene):
-    def input(self, sm):
+    def input(self, sm, inputStream):
         keys = pygame.key.get_pressed()
         if keys[pygame.K_RETURN]:
             sm.push(FadeTransitionScene([self], [LevelSelectScene()]))
@@ -39,7 +39,7 @@ class MainMenuScene(Scene):
 
 
 class LevelSelectScene(Scene):
-    def input(self, sm):
+    def input(self, sm, inputStream):
         keys = pygame.key.get_pressed()
         if keys[pygame.K_1]:
             # set level to 1
@@ -64,7 +64,7 @@ class GameScene(Scene):
         super().__init__()
         self.cameraSystem = engine.CameraSystem()
 
-    def input(self, sm):
+    def input(self, sm, inputStream):
         keys = pygame.key.get_pressed()
         if keys[pygame.K_q]:
             sm.pop()
@@ -88,7 +88,7 @@ class WinScene(Scene):
     def update(self, sm):
         self.alpha = min(255, self.alpha + 10)
 
-    def input(self, sm):
+    def input(self, sm, inputStream):
         keys = pygame.key.get_pressed()
         if keys[pygame.K_x]:
             sm.set([FadeTransitionScene([self], [MainMenuScene(), LevelSelectScene()])])
@@ -111,7 +111,7 @@ class LoseScene(Scene):
     def update(self, sm):
         self.alpha = min(255, self.alpha + 10)
 
-    def input(self, sm):
+    def input(self, sm, inputStream):
         keys = pygame.key.get_pressed()
         if keys[pygame.K_x]:
             sm.set([FadeTransitionScene([self], [MainMenuScene(), LevelSelectScene()])])
@@ -177,9 +177,9 @@ class SceneManager:
         if len(self.scenes) > 0:
             self.scenes[-1].onExit()
 
-    def input(self):
+    def input(self, inputStream):
         if len(self.scenes) > 0:
-            self.scenes[-1].input(self)
+            self.scenes[-1].input(self, inputStream)
 
     def update(self):
         if len(self.scenes) > 0:
