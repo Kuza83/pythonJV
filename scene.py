@@ -2,6 +2,7 @@ import pygame
 import utils
 import globals
 import engine
+import ui
 
 
 class Scene:
@@ -17,7 +18,7 @@ class Scene:
     def input(self, sm, inputStream):
         pass
 
-    def update(self, sm):
+    def update(self, sm, inputStream):
         pass
 
     def draw(self, sm, screen):
@@ -25,38 +26,46 @@ class Scene:
 
 
 class MainMenuScene(Scene):
+    def __init__(self):
+        self.enter = ui.ButtonUI(pygame.K_RETURN, "[Enter = next]", 50, 200)
+        self.esc = ui.ButtonUI(pygame.K_RETURN, "[Q or Esc = quit]", 50, 230)
+        self.c = ui.ButtonUI(pygame.K_c, "[C = test]", 50, 260)
+
     def input(self, sm, inputStream):
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_RETURN]:
+        if inputStream.keyboard.isKeyPressed(pygame.K_RETURN):
             sm.push(FadeTransitionScene([self], [LevelSelectScene()]))
-        if keys[pygame.K_q]:
+        if inputStream.keyboard.isKeyPressed(pygame.K_q):
             sm.pop()
 
+    def update(self, sm, inputStream):
+        self.c.update(inputStream)
+
     def draw(self, sm, screen):
-        # background
         screen.fill(globals.BLACK)
-        utils.drawtext(screen, "Main Menu. [Return=Levels, Q=Quit]", 10, 50, globals.WHITE, 255)
+        utils.drawtext(screen, "Main Menu", 10, 50, globals.WHITE, 255)
+        self.enter.draw(screen)
+        self.esc.draw(screen)
+        self.c.draw(screen)
 
 
 class LevelSelectScene(Scene):
     def input(self, sm, inputStream):
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_1]:
+        if inputStream.keyboard.isKeyPressed(pygame.K_1):
             # set level to 1
             globals.world = globals.levels[1]
             sm.push(FadeTransitionScene([self], [GameScene()]))
-        if keys[pygame.K_2]:
+        if inputStream.keyboard.isKeyPressed(pygame.K_2):
             # set level to 2
             globals.world = globals.levels[2]
             sm.push(FadeTransitionScene([self], [GameScene()]))
-        if keys[pygame.K_LSHIFT]:
+        if inputStream.keyboard.isKeyPressed(pygame.K_LSHIFT):
             sm.pop()
             sm.push(FadeTransitionScene([self], []))
 
     def draw(self, sm, screen):
         # background
         screen.fill(globals.BLACK)
-        utils.drawtext(screen, "Level Select. [1/2=Level, ShiftL=Return Main Menu]", 10, 50, globals.WHITE, 255)
+        utils.drawtext(screen, "Level Select", 10, 50, globals.WHITE, 255)
 
 
 class GameScene(Scene):
@@ -65,8 +74,7 @@ class GameScene(Scene):
         self.cameraSystem = engine.CameraSystem()
 
     def input(self, sm, inputStream):
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_q]:
+        if inputStream.keyboard.isKeyPressed(pygame.K_q):
             sm.pop()
             sm.push(FadeTransitionScene([self], []))
         if globals.world.isWon():
@@ -85,12 +93,11 @@ class WinScene(Scene):
         super().__init__()
         self.alpha = 0
 
-    def update(self, sm):
+    def update(self, sm, inputStream):
         self.alpha = min(255, self.alpha + 10)
 
     def input(self, sm, inputStream):
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_x]:
+        if inputStream.keyboard.isKeyPressed(pygame.K_x):
             sm.set([FadeTransitionScene([self], [MainMenuScene(), LevelSelectScene()])])
 
     def draw(self, sm, screen):
@@ -101,14 +108,14 @@ class WinScene(Scene):
         bgSurf.fill(globals.BLACK)
         utils.blit_alpha(screen, bgSurf, (0, 0), self.alpha * 0.7)
 
-        utils.drawtext(screen, "YOU WIN !!!!! press x", 150, 150, globals.WHITE, self.alpha)
+        utils.drawtext(screen, "YOU WIN !!!!!", 150, 150, globals.WHITE, self.alpha)
 
 
 class LoseScene(Scene):
     def __init__(self):
         self.alpha = 0
 
-    def update(self, sm):
+    def update(self, sm, inputStream):
         self.alpha = min(255, self.alpha + 10)
 
     def input(self, sm, inputStream):
@@ -124,7 +131,7 @@ class LoseScene(Scene):
         bgSurf.fill(globals.BLACK)
         utils.blit_alpha(screen, bgSurf, (0, 0), self.alpha * 0.7)
 
-        utils.drawtext(screen, "YOU LOSE !!!!! press x", 150, 150, globals.WHITE, self.alpha)
+        utils.drawtext(screen, "YOU LOSE !!!!!", 150, 150, globals.WHITE, self.alpha)
 
 
 class TransitionScene(Scene):
@@ -134,7 +141,7 @@ class TransitionScene(Scene):
         self.fromScenes = fromScenes
         self.toScenes = toScenes
 
-    def update(self, sm):
+    def update(self, sm, inputStream):
         self.currentPercentage += 2
         if self.currentPercentage >= 100:
             sm.pop()
@@ -181,9 +188,9 @@ class SceneManager:
         if len(self.scenes) > 0:
             self.scenes[-1].input(self, inputStream)
 
-    def update(self):
+    def update(self, inputStream):
         if len(self.scenes) > 0:
-            self.scenes[-1].update(self)
+            self.scenes[-1].update(self, inputStream)
 
     def draw(self, screen):
         if len(self.scenes) > 0:

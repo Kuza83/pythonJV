@@ -8,7 +8,7 @@ import utils
 import level
 import scene
 import globals
-import inputstream
+import input
 
 
 # ----
@@ -112,7 +112,7 @@ sceneManager = scene.SceneManager()
 mainMenu = scene.MainMenuScene()
 sceneManager.push(mainMenu)
 
-inputStream = inputstream.InputStream()
+inputStream = input.InputStream()
 
 running = True
 
@@ -122,11 +122,13 @@ running = True
 
 while running:
 
+    inputStream.processInput()
+
     if sceneManager.isEmpty():
         running = False
 
-    sceneManager.input(inputstream)
-    sceneManager.update()
+    sceneManager.input(inputStream)
+    sceneManager.update(inputStream)
     sceneManager.draw(screen)
 
     # -----
@@ -138,7 +140,7 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-    if keys[pygame.K_ESCAPE]:
+    if inputStream.keyboard.isKeyPressed(pygame.K_ESCAPE):
         running = False
 
     if game_state == "playing":

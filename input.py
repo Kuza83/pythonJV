@@ -11,20 +11,24 @@ class Keyboard:
         self.currentKeyStates = pygame.key.get_pressed()
 
     def isKeyDown(self, keyCode):
+        if self.currentKeyStates is None or self.previousKeyStates is None:
+            return False
         return self.currentKeyStates[keyCode] == True
 
     def isKeyPressed(self, keyCode):
+        if self.currentKeyStates is None or self.previousKeyStates is None:
+            return False
         return self.currentKeyStates[keyCode] == True and self.previousKeyStates[keyCode] == False
 
-    def isKeyRealesed(self, keyCode):
+    def isKeyReleased(self, keyCode):
+        if self.currentKeyStates is None or self.previousKeyStates is None:
+            return False
         return self.currentKeyStates[keyCode] == False and self.previousKeyStates[keyCode] == True
 
 
 class InputStream:
     def __init__(self):
         self.keyboard = Keyboard()
-        # self.mouse
-        # self.controllers
 
     def processInput(self):
         self.keyboard.processInput()
