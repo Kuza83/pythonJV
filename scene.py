@@ -28,8 +28,7 @@ class Scene:
 class MainMenuScene(Scene):
     def __init__(self):
         self.enter = ui.ButtonUI(pygame.K_RETURN, "[Enter = next]", 50, 200)
-        self.esc = ui.ButtonUI(pygame.K_RETURN, "[Q or Esc = quit]", 50, 230)
-        self.c = ui.ButtonUI(pygame.K_c, "[C = test]", 50, 260)
+        self.esc = ui.ButtonUI(pygame.K_ESCAPE, "[Q or Esc = quit]", 50, 230)
 
     def input(self, sm, inputStream):
         if inputStream.keyboard.isKeyPressed(pygame.K_RETURN):
@@ -38,17 +37,21 @@ class MainMenuScene(Scene):
             sm.pop()
 
     def update(self, sm, inputStream):
-        self.c.update(inputStream)
+        self.enter.update(inputStream)
+        self.esc.update(inputStream)
 
     def draw(self, sm, screen):
         screen.fill(globals.BLACK)
         utils.drawtext(screen, "Main Menu", 10, 50, globals.WHITE, 255)
         self.enter.draw(screen)
         self.esc.draw(screen)
-        self.c.draw(screen)
 
 
 class LevelSelectScene(Scene):
+    def __init__(self):
+        self.b1 = ui.ButtonUI(pygame.K_1, "[Press 1 to Level 1]", 50, 200)
+        self.b2 = ui.ButtonUI(pygame.K_2, "[Press 2 to Level 2]", 50, 230)
+
     def input(self, sm, inputStream):
         if inputStream.keyboard.isKeyPressed(pygame.K_1):
             # set level to 1
@@ -62,10 +65,16 @@ class LevelSelectScene(Scene):
             sm.pop()
             sm.push(FadeTransitionScene([self], []))
 
+    def update(self, sm, inputStream):
+        self.b1.update(inputStream)
+        self.b2.update(inputStream)
+
     def draw(self, sm, screen):
         # background
         screen.fill(globals.BLACK)
         utils.drawtext(screen, "Level Select", 10, 50, globals.WHITE, 255)
+        self.b1.draw(screen)
+        self.b2.draw(screen)
 
 
 class GameScene(Scene):
@@ -92,13 +101,15 @@ class WinScene(Scene):
     def __init__(self):
         super().__init__()
         self.alpha = 0
-
-    def update(self, sm, inputStream):
-        self.alpha = min(255, self.alpha + 10)
+        self.esc = ui.ButtonUI(pygame.K_ESCAPE, "[Press X = return level selection]", 50, 230)
 
     def input(self, sm, inputStream):
         if inputStream.keyboard.isKeyPressed(pygame.K_x):
             sm.set([FadeTransitionScene([self], [MainMenuScene(), LevelSelectScene()])])
+
+    def update(self, sm, inputStream):
+        self.alpha = min(255, self.alpha + 10)
+        self.esc.update(inputStream)
 
     def draw(self, sm, screen):
         if len(sm.scenes) > 1:
@@ -109,19 +120,22 @@ class WinScene(Scene):
         utils.blit_alpha(screen, bgSurf, (0, 0), self.alpha * 0.7)
 
         utils.drawtext(screen, "YOU WIN !!!!!", 150, 150, globals.WHITE, self.alpha)
+        self.esc.draw(screen)
 
 
 class LoseScene(Scene):
     def __init__(self):
         self.alpha = 0
-
-    def update(self, sm, inputStream):
-        self.alpha = min(255, self.alpha + 10)
+        self.esc = ui.ButtonUI(pygame.K_ESCAPE, "[Press X = return level selection]", 50, 230)
 
     def input(self, sm, inputStream):
         keys = pygame.key.get_pressed()
         if keys[pygame.K_x]:
             sm.set([FadeTransitionScene([self], [MainMenuScene(), LevelSelectScene()])])
+
+    def update(self, sm, inputStream):
+        self.alpha = min(255, self.alpha + 10)
+        self.esc.update(inputStream)
 
     def draw(self, sm, screen):
         if len(sm.scenes) > 1:
@@ -132,6 +146,7 @@ class LoseScene(Scene):
         utils.blit_alpha(screen, bgSurf, (0, 0), self.alpha * 0.7)
 
         utils.drawtext(screen, "YOU LOSE !!!!!", 150, 150, globals.WHITE, self.alpha)
+        self.esc.draw(screen, alpha= self.alpha)
 
 
 class TransitionScene(Scene):
@@ -147,6 +162,14 @@ class TransitionScene(Scene):
             sm.pop()
             for s in self.toScenes:
                 sm.push(s)
+        for scene in self.fromScenes:
+            scene.update(sm, inputStream)
+        if len(self.toScenes) > 0:
+            for scene in self.toScenes:
+                scene.update(sm, inputStream)
+        else:
+            if len(sm.scenes) > 1:
+                sm.scenes[-2].update(sm, inputStream)
 
 
 class FadeTransitionScene(TransitionScene):
