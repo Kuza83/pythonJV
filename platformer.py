@@ -29,7 +29,6 @@ game_state = "playing"
 entities = []
 
 # player
-player_speed = 0
 player_acceleration = 0.2
 
 player_on_ground = True
@@ -42,6 +41,9 @@ player.camera.trackEntity(player)
 
 player.score = engine.Score()
 player.battle = engine.Battle()
+
+player.input = engine.Input(pygame.K_SPACE, pygame.K_DOWN, pygame.K_LEFT, pygame.K_RIGHT, pygame.K_z, pygame.K_d)
+player.intention = engine.Intention()
 
 # enemy
 enemy = utils.makeEnemy(100, 220)
@@ -149,7 +151,7 @@ while running:
         new_player_y = player.position.rect.y
 
         if keys[pygame.K_SPACE] and player_on_ground:
-            player_speed = -6
+            player.speed = -6
         elif keys[pygame.K_LEFT]:
             new_player_x -= 3
             player.direction = "left"
@@ -191,8 +193,8 @@ while running:
         if not x_collision:
             player.position.rect.x = new_player_x
 
-        player_speed += player_acceleration
-        new_player_y += player_speed
+        player.speed += player_acceleration
+        new_player_y += player.speed
 
         new_player_rect = pygame.Rect(int(player.position.rect.x), int(new_player_y), player.position.rect.width,
                                       player.position.rect.height)
@@ -203,7 +205,7 @@ while running:
         for p in globals.world.platforms:
             if p.colliderect(new_player_rect):
                 y_collision = True
-                player_speed = 0
+                player.speed = 0
                 if p[1] > new_player_y:
                     player.position.rect.y = p[1] - player.position.rect.height
                     player_on_ground = True
@@ -211,42 +213,11 @@ while running:
         if not y_collision:
             player.position.rect.y = new_player_y
 
-        player_rect = pygame.Rect(int(player.position.rect.x), int(player.position.rect.y), player.position.rect.width,
-                                  player.position.rect.height)
-
         if player.position.rect.y > 500:
             player.position.rect.x = 300
             player.position.rect.y = -50
             player.battle.lives -= 1
-            player_speed = 0
-
-        # collectible system
-        for entity in globals.world.entities:
-            if entity.type == "collectable":
-                if entity.position.rect.colliderect(player_rect):
-                    globals.world.entities.remove(entity)
-                    player.score.score += 1
-
-        # enemy system
-        for entity in globals.world.entities:
-            if entity.type == "dangerous":
-                if entity.position.rect.colliderect(player_rect):
-                    player.battle.lives -= 1
-                    player.position.rect.x = 300
-                    player.position.rect.y = -50
-                    player_speed = 0
-
-    # if globals.world.isWon():
-    #     if player.score.score >= 3:
-    #         game_state = "win"
-    #
-    # if globals.world.isLost():
-    #     if player.battle.lives <= 0:
-    #         game_state = "lose"
-
-    # ----
-    # DRAW
-    # ----
+            player.speed = 0
 
     clock.tick(globals.FPS)
 

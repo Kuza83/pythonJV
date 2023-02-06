@@ -10,23 +10,58 @@ class System:
     def check(self, entity):
         return True
 
-    def update(self, screen):
+    def update(self, screen=None, inputStream=None):
         for entity in globals.world.entities:
             if self.check(entity):
-                self.updateEntity(screen, entity)
+                self.updateEntity(screen, inputStream, entity)
 
-    def updateEntity(self, screen, entity):
+    def updateEntity(self, screen, inputStream, entity):
         pass
 
 
-class CameraSystem(System):
-    def __init__(self):
-        super(CameraSystem, self).__init__()
+class InputSystem(System):
+    def check(self, entity):
+        return entity.input is not None and entity.intention is not None
 
+    def updateEntity(self, screen, inputStream, entity):
+        if inputStream.keyboard.isKeyDown(entity.input.up):
+            entity.intention.jump = True
+
+
+class CollectionSystem(System):
+    def check(self, entity):
+        return entity.type == "player" and entity.battle is not None
+
+    def updateEntity(self, screen, inputStream, entity):
+        for otherEntity in globals.world.entities:
+            if otherEntity is not entity and otherEntity.type == "collectable":
+                if entity.position.rect.colliderect(otherEntity.position.rect):
+                    # entity.collectable.onCollide(entity, otherEntity)
+                    globals.world.entities.remove(otherEntity)
+                    entity.score.score += 1
+
+
+class BattleSystem(System):
+    def check(self, entity):
+        return entity.type == "player" and entity.score is not None
+
+    def updateEntity(self, screen, inputStream, entity):
+        for otherEntity in globals.world.entities:
+            if otherEntity is not entity and otherEntity.type == "dangerous":
+                if entity.position.rect.colliderect(otherEntity.position.rect):
+                    # entity.battle.onCollide(entity, otherEntity)
+                    entity.battle.lives -= 1
+                    # reset player position
+                    entity.position.rect.x = 300
+                    entity.position.rect.y = -50
+                    entity.speed = 0
+
+
+class CameraSystem(System):
     def check(self, entity):
         return entity.camera is not None
 
-    def updateEntity(self, screen, entity):
+    def updateEntity(self, screen, inputStream, entity):
 
         # set clipping rectangle
         cameraRect = entity.camera.rect
@@ -77,7 +112,8 @@ class CameraSystem(System):
         # score
         if entity.score is not None:
             screen.blit(utils.coin0, (entity.camera.rect.w - 50, entity.camera.rect.y + 10))
-            utils.drawtext(screen, str(entity.score.score), entity.camera.rect.w - 20, entity.camera.rect.y + 10, globals.WHITE, 0)
+            utils.drawtext(screen, str(entity.score.score), entity.camera.rect.w - 20, entity.camera.rect.y + 10,
+                           globals.WHITE, 0)
 
         # # heart
         if entity.battle is not None:
@@ -149,6 +185,25 @@ class Battle:
         self.lives = 3
 
 
+class Input:
+    def __init__(self, up, down, left, right, b1, b2):
+        self.up = up
+        self.down = down
+        self.left = left
+        self.right = right
+        self.b1 = b1
+        self.b2 = b2
+
+
+class Intention:
+    def __init__(self):
+        self.moveLeft = False
+        self.moveRIght = False
+        self.jump = False
+        self.zoomIn = False
+        self.zoomOut = False
+
+
 class Entity:
     def __init__(self):
         self.state = "idle"
@@ -159,3 +214,6 @@ class Entity:
         self.camera = None
         self.score = None
         self.battle = None
+        self.speed = 0
+        self.input = None
+        self.intention = None

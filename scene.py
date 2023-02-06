@@ -81,6 +81,9 @@ class GameScene(Scene):
     def __init__(self):
         super().__init__()
         self.cameraSystem = engine.CameraSystem()
+        self.collectionSystem = engine.CollectionSystem()
+        self.battleSystem = engine.BattleSystem()
+        self.inputSystem = engine.InputSystem()
 
     def input(self, sm, inputStream):
         if inputStream.keyboard.isKeyPressed(pygame.K_q):
@@ -90,6 +93,11 @@ class GameScene(Scene):
             sm.set([WinScene()])
         if globals.world.isLost():
             sm.set([LoseScene()])
+
+    def update(self, sm, inputStream):
+        self.inputSystem.update(inputStream=inputStream)
+        self.collectionSystem.update()
+        self.battleSystem.update()
 
     def draw(self, sm, screen):
         # background
