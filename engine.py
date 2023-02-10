@@ -19,18 +19,117 @@ class System:
         pass
 
 
+class AnimationSystem(System):
+    def check(self, entity):
+        return entity.animations is not None
+
+    def updateEntity(self, screen, inputStream, entity):
+        entity.animations.animationList[entity.state].update()
+
+
+class PhysicsSystem(System):
+    def check(self, entity):
+        return entity.position is not None
+
+    def updateEntity(self, screen, inputStream, entity):
+        new_x = entity.position.rect.x
+        new_y = entity.position.rect.y
+
+        if entity.intention is not None:
+            if entity.intention.moveLeft:
+                new_x -= 3
+                entity.direction = "left"
+                entity.state = "walking"
+            if entity.intention.moveRight:
+                new_x += 3
+                entity.direction = "right"
+                entity.state = "walking"
+            if not entity.intention.moveLeft and not entity.intention.moveRight:
+                entity.state = "idle"
+            if entity.intention.jump and entity.on_ground:
+                entity.speed = -5
+
+            new_x_rect = pygame.Rect(
+                int(new_x),
+                int(entity.position.rect.y),
+                entity.position.rect.width,
+                entity.position.rect.height)
+
+            x_collision = False
+
+            for platform in globals.world.platforms:
+                if platform.colliderect(new_x_rect):
+                    x_collision = True
+                    break
+
+            if not x_collision:
+                entity.position.rect.x = new_x
+
+            entity.speed += entity.acceleration
+            new_y += entity.speed
+
+            new_y_rect = pygame.Rect(
+                int(entity.position.rect.x),
+                int(new_y),
+                entity.position.rect.width,
+                entity.position.rect.height)
+
+            y_collision = False
+            entity.on_ground = False
+
+            for platform in globals.world.platforms:
+                if platform.colliderect(new_y_rect):
+                    y_collision = True
+                    entity.speed = 0
+                    if platform[1] > new_y:
+                        entity.position.rect.y = platform[1] - entity.position.rect.height
+                        entity.on_ground = True
+
+            if not y_collision:
+                entity.position.rect.y = int(new_y)
+
+            # reset intentions
+            if entity.intention is not None:
+                entity.intention.moveLeft = False
+                entity.intention.moveRight = False
+                entity.intention.jump = False
+
+
 class InputSystem(System):
     def check(self, entity):
         return entity.input is not None and entity.intention is not None
 
     def updateEntity(self, screen, inputStream, entity):
+        # Jump
         if inputStream.keyboard.isKeyDown(entity.input.up):
             entity.intention.jump = True
+        else:
+            entity.intention.jump = False
+        # Move Left
+        if inputStream.keyboard.isKeyDown(entity.input.left):
+            entity.intention.moveLeft = True
+        else:
+            entity.intention.moveLeft = False
+        # Move Right
+        if inputStream.keyboard.isKeyDown(entity.input.right):
+            entity.intention.moveRight = True
+        else:
+            entity.intention.moveRight = False
+        # Zoom In
+        if inputStream.keyboard.isKeyDown(entity.input.b2):
+            entity.intention.zoomIn = True
+        else:
+            entity.intention.zoomIn = False
+        # Zoom Out
+        if inputStream.keyboard.isKeyDown(entity.input.b1):
+            entity.intention.zoomOut = True
+        else:
+            entity.intention.zoomOut = False
 
 
 class CollectionSystem(System):
     def check(self, entity):
-        return entity.type == "player" and entity.battle is not None
+        return entity.type == "player" and entity.score is not None
 
     def updateEntity(self, screen, inputStream, entity):
         for otherEntity in globals.world.entities:
@@ -43,7 +142,7 @@ class CollectionSystem(System):
 
 class BattleSystem(System):
     def check(self, entity):
-        return entity.type == "player" and entity.score is not None
+        return entity.type == "player" and entity.battle is not None
 
     def updateEntity(self, screen, inputStream, entity):
         for otherEntity in globals.world.entities:
@@ -62,6 +161,13 @@ class CameraSystem(System):
         return entity.camera is not None
 
     def updateEntity(self, screen, inputStream, entity):
+
+        # Zoom
+        if entity.intention is not None:
+            if entity.intention.zoomIn:
+                entity.camera.zoomLevel += 0.01
+            if entity.intention.zoomOut:
+                entity.camera.zoomLevel -= 0.01
 
         # set clipping rectangle
         cameraRect = entity.camera.rect
@@ -198,7 +304,7 @@ class Input:
 class Intention:
     def __init__(self):
         self.moveLeft = False
-        self.moveRIght = False
+        self.moveRight = False
         self.jump = False
         self.zoomIn = False
         self.zoomOut = False
@@ -217,3 +323,5 @@ class Entity:
         self.speed = 0
         self.input = None
         self.intention = None
+        self.on_ground = False
+        self.acceleration = 0.2

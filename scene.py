@@ -84,6 +84,8 @@ class GameScene(Scene):
         self.collectionSystem = engine.CollectionSystem()
         self.battleSystem = engine.BattleSystem()
         self.inputSystem = engine.InputSystem()
+        self.physicsSystem = engine.PhysicsSystem()
+        self.animationSystem = engine.AnimationSystem()
 
     def input(self, sm, inputStream):
         if inputStream.keyboard.isKeyPressed(pygame.K_q):
@@ -98,6 +100,8 @@ class GameScene(Scene):
         self.inputSystem.update(inputStream=inputStream)
         self.collectionSystem.update()
         self.battleSystem.update()
+        self.physicsSystem.update()
+        self.animationSystem.update()
 
     def draw(self, sm, screen):
         # background
