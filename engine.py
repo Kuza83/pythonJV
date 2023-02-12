@@ -324,4 +324,4 @@ class Entity:
         self.input = None
         self.intention = None
         self.on_ground = False
-        self.acceleration = 0.2
+        self.acceleration = 0

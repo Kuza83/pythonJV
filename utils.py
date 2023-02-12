@@ -1,8 +1,6 @@
-
 import pygame
 import engine
 import globals
-
 
 pygame.font.init()
 font = pygame.font.Font(pygame.font.get_default_font(), 24)
@@ -77,8 +75,22 @@ def makePlayer(x, y):
     entity = engine.Entity()
     entity.position = engine.Position(x, y, 40, 70)
     entityIdleAnimation = engine.Animation([idle0, idle1, idle2, idle3])
-    entityWalkingAnimation = engine.Animation([walking0, walking1, walking2, walking3, walking4, walking5, walking6, walking7])
+    entityWalkingAnimation = engine.Animation(
+        [
+            walking0,
+            walking1,
+            walking2,
+            walking3,
+            walking4,
+            walking5,
+            walking6,
+            walking7
+        ])
     entity.animations.add("idle", entityIdleAnimation)
     entity.animations.add("walking", entityWalkingAnimation)
     entity.type = "player"
+    entity.intention = engine.Intention()
+    entity.acceleration = 0.2
+    entity.score = engine.Score()
+    entity.battle = engine.Battle()
     return entity
