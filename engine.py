@@ -310,6 +310,10 @@ class Intention:
         self.zoomOut = False
 
 
+def resetEntity(entity):
+    pass
+
+
 class Entity:
     def __init__(self):
         self.state = "idle"
@@ -325,3 +329,6 @@ class Entity:
         self.intention = None
         self.on_ground = False
         self.acceleration = 0
+        self.reset = resetEntity
+
+

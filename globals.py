@@ -1,6 +1,4 @@
-import pygame
 
-levels = {}
 world = None
 
 

@@ -71,6 +71,16 @@ walking6 = pygame.image.load("sprites/Mario_Run6.png")
 walking7 = pygame.image.load("sprites/Mario_Run7.png")
 
 
+def resetPlayer(entity):
+    entity.score.score = 0
+    entity.battle.lives = 3
+    entity.position.rect.x = 300
+    entity.position.rect.y = 0
+    entity.speed = 0
+    entity.acceleration = 0.2
+    entity.camera.setWorldPos(300, 0)
+
+
 def makePlayer(x, y):
     entity = engine.Entity()
     entity.position = engine.Position(x, y, 40, 70)
@@ -93,4 +103,5 @@ def makePlayer(x, y):
     entity.acceleration = 0.2
     entity.score = engine.Score()
     entity.battle = engine.Battle()
+    entity.reset = resetPlayer
     return entity

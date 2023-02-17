@@ -53,7 +53,8 @@ def loadLevel(levelNumber):
             entities=[
                 utils.makeCoin(350, 270),
                 utils.makeCoin(250, 270),
-                utils.makeEnemy(100, 220),
+                utils.makeCoin(300, 270),
+                utils.makeEnemy(150, 270),
                 globals.player1
             ],
             winFunc=wonLevel,
@@ -67,8 +68,15 @@ def loadLevel(levelNumber):
             ],
             entities=[
                 utils.makeCoin(350, 270),
+                utils.makeCoin(350, 270),
+                utils.makeCoin(350, 270),
+                utils.makeEnemy(150, 270),
                 globals.player1
             ],
             winFunc=wonLevel,
             loseFunc=lostLevel
         )
+
+# reset players
+    for entity in globals.world.entities:
+        entity.reset(entity)

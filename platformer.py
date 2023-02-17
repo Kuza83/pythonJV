@@ -31,6 +31,7 @@ sceneManager.push(mainMenu)
 inputStream = input.InputStream()
 
 # create player
+globals.player1 = utils.makePlayer(300, 0)
 globals.player1.camera = engine.Camera(10, 10, 400, 400)
 globals.player1.camera.setWorldPos(300, 0)
 globals.player1.camera.trackEntity(globals.player1)
