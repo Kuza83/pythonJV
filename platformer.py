@@ -1,14 +1,11 @@
-# -----------------
-# CONSTANT VARIABLE
-# -----------------
 
 import pygame
 import engine
 import utils
-import level
 import scene
 import globals
 import input
+import soundmanager
 
 
 # ----
@@ -29,6 +26,8 @@ mainMenu = scene.MainMenuScene()
 sceneManager.push(mainMenu)
 
 inputStream = input.InputStream()
+globals.soundManager.update()
+
 
 # create player
 globals.player1 = utils.makePlayer(300, 0)

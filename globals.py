@@ -1,3 +1,4 @@
+import soundmanager
 
 world = None
 
@@ -14,3 +15,5 @@ WHITE = (255, 255, 255)
 GREEN = (0, 255, 0)
 
 player1 = None
+
+soundManager = soundmanager.SoundManager()
